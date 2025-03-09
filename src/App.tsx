@@ -3,8 +3,8 @@ import './App.css'
 import { checkEmotionApiHealth, testEmotionApi } from './utils'
 import EmotionWheel from './components/EmotionWheel'
 
-// Flag to indicate we're using mock APIs - set to true since the real API is not responding
-const USE_MOCK_API = true;
+// Flag to indicate we're using mock APIs - set to false to attempt real API connection
+const USE_MOCK_API = false;
 
 interface EmotionResponse {
   id: string;
@@ -67,14 +67,22 @@ export default function App() {
           console.log("Sending to emotion API:", JSON.stringify({ query: inputText }));
           console.log("Emotion API endpoint: https://emorag-arangodb-py-547962548252.us-central1.run.app/extract-emotions/qa");
 
+          // Use CORS proxy to avoid CORS issues
+          const proxyUrl = 'https://corsproxy.io/?';
+          const targetUrl = 'https://emorag-arangodb-py-547962548252.us-central1.run.app/extract-emotions/qa';
+          
+          console.log("Using CORS proxy to connect to emotion API");
+          
           // Simplified robust request with better error logging
-          const emotionResponse = await fetch('https://emorag-arangodb-py-547962548252.us-central1.run.app/extract-emotions/qa', {
+          const emotionResponse = await fetch(proxyUrl + encodeURIComponent(targetUrl), {
             method: 'POST',
             headers: { 
               'Content-Type': 'application/json',
-              'Accept': 'application/json, text/plain, */*'
+              'Accept': 'application/json, text/plain, */*',
+              'Origin': window.location.origin
             },
             body: JSON.stringify({ query: inputText }),
+            mode: 'cors',
             // Adding timeout to prevent long-hanging requests
             signal: AbortSignal.timeout(30000)
           }).catch(error => {
@@ -389,11 +397,18 @@ export default function App() {
                   // Try a direct fetch with detailed logging
                   try {
                     console.log("Making direct API test call...");
-                    const directResponse = await fetch('https://emorag-arangodb-py-547962548252.us-central1.run.app/extract-emotions/qa', {
+                    // Use CORS proxy for direct API test
+                    const proxyUrl = 'https://corsproxy.io/?';
+                    const targetUrl = 'https://emorag-arangodb-py-547962548252.us-central1.run.app/extract-emotions/qa';
+                    
+                    console.log("Using CORS proxy for direct API test");
+                    
+                    const directResponse = await fetch(proxyUrl + encodeURIComponent(targetUrl), {
                       method: 'POST',
                       headers: {
                         'Content-Type': 'application/json',
-                        'Accept': 'application/json, text/plain, */*'
+                        'Accept': 'application/json, text/plain, */*',
+                        'Origin': window.location.origin
                       },
                       body: JSON.stringify({ query: "Test message from UI" }),
                       mode: 'cors',
@@ -622,11 +637,18 @@ export default function App() {
                   console.log("Test payload:", JSON.stringify(testPayload));
                   console.log("Sending manual test to API...");
 
-                  const testResponse = await fetch('https://emorag-arangodb-py-547962548252.us-central1.run.app/extract-emotions/qa', {
+                  // Use CORS proxy for manual API test
+                  const proxyUrl = 'https://corsproxy.io/?';
+                  const targetUrl = 'https://emorag-arangodb-py-547962548252.us-central1.run.app/extract-emotions/qa';
+                  
+                  console.log("Using CORS proxy for manual API test");
+                  
+                  const testResponse = await fetch(proxyUrl + encodeURIComponent(targetUrl), {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json',
-                      'Accept': 'application/json, text/plain, */*'
+                      'Accept': 'application/json, text/plain, */*',
+                      'Origin': window.location.origin
                     },
                     body: JSON.stringify(testPayload),
                     mode: 'cors',

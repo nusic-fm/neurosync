@@ -3,8 +3,8 @@
 import { mockApiHealth, mockEmotionApi } from './mockApi';
 
 // Flag to control whether we use the real API or mock
-// Setting to true since the real API is not responding
-const USE_MOCK_API = true;
+// Set to false to try the real API endpoint
+const USE_MOCK_API = false;
 
 /**
  * Simple health check for the emotion API to determine if it's available
@@ -33,13 +33,21 @@ export const checkEmotionApiHealth = async (): Promise<boolean> => {
       body: JSON.stringify({ query: testQuery })
     });
     
-    const response = await fetch('https://emorag-arangodb-py-547962548252.us-central1.run.app/extract-emotions/qa', {
+    // Try using a CORS proxy to avoid cross-origin issues
+    const proxyUrl = 'https://corsproxy.io/?';
+    const targetUrl = 'https://emorag-arangodb-py-547962548252.us-central1.run.app/extract-emotions/qa';
+    
+    console.log("Using CORS proxy to connect to API");
+    
+    const response = await fetch(proxyUrl + encodeURIComponent(targetUrl), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json, text/plain, */*'
+        'Accept': 'application/json, text/plain, */*',
+        'Origin': window.location.origin
       },
       body: JSON.stringify({ query: testQuery }),
+      mode: 'cors',
       signal: AbortSignal.timeout(15000) // Extended timeout for health check
     }).catch(fetchError => {
       console.error("Fetch error details:", fetchError);
@@ -109,11 +117,18 @@ export const testEmotionApi = async (query: string): Promise<{
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000);
       
-      const response = await fetch(endpoint, {
+      // Use CORS proxy for the real API endpoint
+      const proxyUrl = 'https://corsproxy.io/?';
+      const targetEndpoint = endpoint;
+      
+      console.log(`Using CORS proxy for endpoint: ${targetEndpoint}`);
+      
+      const response = await fetch(proxyUrl + encodeURIComponent(targetEndpoint), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json, text/plain, */*'
+          'Accept': 'application/json, text/plain, */*',
+          'Origin': window.location.origin
         },
         body: JSON.stringify({ query }),
         signal: controller.signal,
