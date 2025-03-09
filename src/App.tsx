@@ -41,7 +41,7 @@ export default function App() {
       // Extract emotions from text
       setProcessingStage('emotion');
       setStatusMessage('Checking API availability...');
-      
+
       // Check both APIs to ensure they're accessible
       try {
         // Define the health check function
@@ -53,7 +53,7 @@ export default function App() {
               mode: 'cors',
               cache: 'no-cache'
             }).catch(() => null);
-            
+
             if (!response) {
               throw new Error(`${name} API appears to be offline`);
             }
@@ -69,7 +69,7 @@ export default function App() {
           'https://emorag-arangodb-py-547962548252.us-central1.run.app', 
           'Emotion'
         );
-        
+
         // Check TTS API
         const ttsApiAlive = await checkApiHealth(
           'https://tts-twitter-agent-547962548252.us-central1.run.app', 
@@ -83,13 +83,13 @@ export default function App() {
         } else if (!ttsApiAlive) {
           throw new Error('TTS API server appears to be offline. Please try again later.');
         }
-        
+
         setStatusMessage('APIs are available. Processing your request...');
       } catch (apiCheckError: any) {
         clearInterval(spinInterval);
         throw apiCheckError;
       }
-      
+
       setStatusMessage('Analyzing text emotions...');
       console.log("Calling emotion API...");
 
@@ -120,7 +120,7 @@ export default function App() {
 
           const emotionData = await emotionResponse.text();
           console.log("Emotion API response:", emotionData);
-          
+
           // Correct parsing based on your example
           let parsedEmotion = '';
           if (emotionData.includes(':')) {
@@ -130,11 +130,11 @@ export default function App() {
           } else {
             parsedEmotion = emotionData.trim().toLowerCase() || 'neutral';
           }
-          
+
           emotionId = parsedEmotion;
           console.log("Extracted emotion ID:", emotionId);
           setStatusMessage(`Detected emotion: ${emotionId}`);
-          
+
           // Only set the emotion if we actually got a response
           setSelectedEmotion(emotionId);
         } catch (emotionApiError: any) {
@@ -163,65 +163,83 @@ export default function App() {
         // Set the wheel to the emotion position or a random position if not mapped
         setWheelRotation(emotionPositions[emotionId] || Math.random() * 360);
 
-        // Generate TTS with the emotion
-        setProcessingStage('speech');
-        setStatusMessage('Generating emotional speech...');
-        console.log("Calling TTS API...");
-
-        try {
-          const ttsResponse = await fetch('https://tts-twitter-agent-547962548252.us-central1.run.app/llasa-voice-synthesizer', {
-            method: 'POST',
-            headers: { 
-              'Content-Type': 'application/json',
-              'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-              text: inputText,
-              audio_url: ''
-            }),
-            // Extend timeout for TTS as it might take longer
-            signal: AbortSignal.timeout(30000),
-            // Add mode for CORS
-            mode: 'cors',
-            // Add cache control
-            cache: 'no-cache'
-          });
-
-          if (!ttsResponse.ok) {
-            throw new Error(`TTS API returned status ${ttsResponse.status}: ${ttsResponse.statusText}`);
-          }
-
-          // First try to parse as JSON
-          let ttsData;
+        // Check if TTS API is available before attempting to generate speech
           try {
-            ttsData = await ttsResponse.json();
-            console.log("TTS API response (JSON):", ttsData);
-          } catch (parseError) {
-            // If JSON parsing fails, try as text
-            const textResponse = await ttsResponse.text();
-            console.log("TTS API response (Text):", textResponse);
-            
-            // Try to extract URL from text if it's not JSON
-            if (textResponse.includes('http')) {
-              ttsData = { url: textResponse.trim() };
-            } else {
-              throw new Error("Unable to parse TTS API response");
-            }
-          }
+            const ttsApiCheck = await fetch('https://tts-twitter-agent-547962548252.us-central1.run.app/health', {
+              method: 'GET',
+              signal: AbortSignal.timeout(5000),
+              mode: 'cors',
+              cache: 'no-cache'
+            }).catch(() => null);
 
-          if (ttsData && ttsData.url) {
-            setSpeechUrl(ttsData.url);
-            console.log("Speech URL successfully set to:", ttsData.url);
-            setStatusMessage('Speech generated successfully!');
-            console.log("Speech URL set to:", ttsData.url);
-          } else {
-            throw new Error("No URL returned from TTS API");
+            if (ttsApiCheck) {
+              // Generate TTS with the emotion
+              setProcessingStage('speech');
+              setStatusMessage('Generating emotional speech...');
+              console.log("Calling TTS API...");
+
+              try {
+                const ttsResponse = await fetch('https://tts-twitter-agent-547962548252.us-central1.run.app/llasa-voice-synthesizer', {
+                  method: 'POST',
+                  headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    text: inputText,
+                    audio_url: ''
+                  }),
+                  // Extend timeout for TTS as it might take longer
+                  signal: AbortSignal.timeout(30000),
+                  // Add mode for CORS
+                  mode: 'cors',
+                  // Add cache control
+                  cache: 'no-cache'
+                });
+
+                if (!ttsResponse.ok) {
+                  throw new Error(`TTS API returned status ${ttsResponse.status}: ${ttsResponse.statusText}`);
+                }
+
+                // First try to parse as JSON
+                let ttsData;
+                try {
+                  ttsData = await ttsResponse.json();
+                  console.log("TTS API response (JSON):", ttsData);
+                } catch (parseError) {
+                  // If JSON parsing fails, try as text
+                  const textResponse = await ttsResponse.text();
+                  console.log("TTS API response (Text):", textResponse);
+
+                  // Try to extract URL from text if it's not JSON
+                  if (textResponse.includes('http')) {
+                    ttsData = { url: textResponse.trim() };
+                  } else {
+                    throw new Error("Unable to parse TTS API response");
+                  }
+                }
+
+                if (ttsData && ttsData.url) {
+                  setSpeechUrl(ttsData.url);
+                  console.log("Speech URL successfully set to:", ttsData.url);
+                  setStatusMessage('Speech generated successfully!');
+                  console.log("Speech URL set to:", ttsData.url);
+                } else {
+                  throw new Error("No URL returned from TTS API");
+                }
+              } catch (ttsApiError: any) {
+                console.error("TTS API Error:", ttsApiError);
+                setStatusMessage(`Speech generation completed with emotion: ${emotionId}. Speech generation failed: (${ttsApiError.message})`);
+                // Don't throw the error - we can still show the emotion even if TTS fails
+              }
+            } else {
+              // TTS API is unavailable, but we still have the emotion result
+              setStatusMessage(`Emotion detected: ${emotionId}. TTS API is currently unavailable.`);
+            }
+          } catch (ttsCheckError) {
+            console.error("TTS API check failed:", ttsCheckError);
+            setStatusMessage(`Emotion detected: ${emotionId}. TTS API is currently unavailable.`);
           }
-        } catch (ttsApiError: any) {
-          console.error("TTS API Error:", ttsApiError);
-          setStatusMessage(`Speech generation failed. (${ttsApiError.message})`);
-          throw ttsApiError;
-        }
       } catch (apiError: any) {
         clearInterval(spinInterval);
         throw apiError;
@@ -243,7 +261,7 @@ export default function App() {
 
       setErrorMessage(`Error: ${userErrorMessage}`);
       setStatusMessage('Failed to process request');
-      
+
       // Reset emotion display when APIs fail
       setSelectedEmotion(null);
       // Stop the wheel at a neutral position

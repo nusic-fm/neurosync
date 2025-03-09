@@ -393,3 +393,30 @@ body {
     font-size: 1.5rem;
   }
 }
+
+.api-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+}
+
+.api-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.api-indicator.online {
+  background-color: #4CAF50;
+}
+
+.api-indicator.offline {
+  background-color: #f44336;
+}
+
+.api-indicator.unknown {
+  background-color: #FFA000;
+}
