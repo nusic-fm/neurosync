@@ -389,9 +389,9 @@ export default function App() {
           <span>Quick Test Queries: </span>
           <span
             className="test-query"
-            onClick={() => setInputText("How does something like this happen")}
+            onClick={() => setInputText("I feel so pissed off with him")}
           >
-            "How does something like this happen"
+            "I feel so pissed off with him"
           </span>
           <span
             className="test-query"
@@ -623,7 +623,7 @@ export default function App() {
 
                   // Try a direct fetch with detailed logging
                   const testPayload = {
-                    query: "How does something like this happen",
+                    query: "I feel so pissed off with him",
                   };
 
                   console.log("Test payload:", JSON.stringify(testPayload));
