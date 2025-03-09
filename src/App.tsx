@@ -125,7 +125,7 @@ export default function App() {
           let parsedEmotion = "free";
 
           // Check if response is an object with data property
-
+          debugger;
           if (emotionData) {
             console.log("Using object data format");
             const dataStr = emotionData.toString();
@@ -358,22 +358,15 @@ export default function App() {
         isProcessing={isProcessing}
         processingStage={processingStage}
       />
-
-      {/* {isProcessing && (
+      
+      {isProcessing && (
         <div className="processing-status">
           <div className="processing-pulse"></div>
-          <span>
-            Processing:{" "}
-            {processingStage === "emotion"
-              ? "Analyzing Emotions"
-              : processingStage === "speech"
-                ? "Generating Speech"
-                : processingStage === "initializing"
-                  ? "Initializing"
-                  : "Processing"}
-          </span>
+          <span>Processing: {processingStage === "emotion" ? "Analyzing Emotions" : 
+                             processingStage === "speech" ? "Generating Speech" : 
+                             processingStage === "initializing" ? "Initializing" : "Processing"}</span>
         </div>
-      )} */}
+      )}
 
       <form onSubmit={handleSubmit} className="input-form">
         <input
@@ -389,9 +382,9 @@ export default function App() {
           <span>Quick Test Queries: </span>
           <span
             className="test-query"
-            onClick={() => setInputText("How does something like this happen")}
+            onClick={() => setInputText("I'm in the town, lets roam around")}
           >
-            "How does something like this happen"
+            "I'm in the town, lets roam around"
           </span>
           <span
             className="test-query"
@@ -419,14 +412,109 @@ export default function App() {
           <button
             type="button"
             className="api-status-button"
-            onClick={() => {
-              window.open(
-                `https://aeneid.storyscan.xyz/token/0xC5016faea1E7E99Cf977DD0f65991a2Aa9D35cBB`,
-                "_blank",
-              );
+            onClick={async () => {
+              try {
+                setStatusMessage("Checking API connection...");
+                setErrorMessage("");
+
+                console.log("API DIAGNOSTICS START -----");
+                console.log("Current time:", new Date().toISOString());
+
+                if (USE_MOCK_API) {
+                  // If using mock API, simply check if the mock API module can be imported
+                  try {
+                    const { mockApiHealth } = await import("./mockApi");
+                    const isOnline = await mockApiHealth();
+
+                    console.log("Mock API health check result:", isOnline);
+                    console.log("API DIAGNOSTICS END -----");
+
+                    setApiStatus("online");
+                    setStatusMessage(
+                      "Mock API is active and working correctly.",
+                    );
+                  } catch (mockError) {
+                    console.error("Mock API import error:", mockError);
+                    setApiStatus("offline");
+                    setStatusMessage("Mock API module could not be loaded.");
+                    setErrorMessage(
+                      `Mock API error: ${mockError instanceof Error ? mockError.message : "Unknown error"}`,
+                    );
+                  }
+                } else {
+                  // Try a direct fetch with detailed logging
+                  try {
+                    console.log("Making direct API test call...");
+                    // Use CORS proxy for direct API test
+                    const proxyUrl = "https://corsproxy.io/?";
+                    const targetUrl =
+                      "https://emorag-arangodb-py-547962548252.us-central1.run.app/extract-emotions/qa";
+
+                    console.log("Using CORS proxy for direct API test");
+
+                    const directResponse = await fetch(
+                      proxyUrl + encodeURIComponent(targetUrl),
+                      {
+                        method: "POST",
+                        headers: {
+                          "Content-Type": "application/json",
+                          Accept: "application/json, text/plain, */*",
+                          Origin: window.location.origin,
+                        },
+                        body: JSON.stringify({ query: "Test message from UI" }),
+                        mode: "cors",
+                        cache: "no-cache",
+                        signal: AbortSignal.timeout(15000),
+                      },
+                    ).catch((e) => {
+                      console.error("Direct fetch error:", e);
+                      throw e;
+                    });
+
+                    console.log(
+                      "Direct API response status:",
+                      directResponse.status,
+                    );
+                    console.log(
+                      "Direct API response headers:",
+                      Object.fromEntries([...directResponse.headers]),
+                    );
+
+                    const responseText = await directResponse.text();
+                    console.log("Direct API response text:", responseText);
+
+                    // Now use the utility function
+                    const isOnline = await checkEmotionApiHealth();
+                    console.log("API DIAGNOSTICS END -----");
+
+                    setApiStatus(isOnline ? "online" : "offline");
+                    setStatusMessage(
+                      isOnline
+                        ? "API connection successful! The emotion API is online."
+                        : "API connection failed. The emotion API appears to be offline. See console for details.",
+                    );
+
+                    if (!isOnline) {
+                      setErrorMessage(
+                        "API server appears to be offline. Please check browser console for diagnostic information.",
+                      );
+                    }
+                  } catch (directError: any) {
+                    console.error("Direct API test failed:", directError);
+                    throw directError;
+                  }
+                }
+              } catch (error: any) {
+                console.error("API Connection Error:", error);
+                setApiStatus("offline");
+                setStatusMessage("API connection check failed");
+                setErrorMessage(
+                  `API Connection Error: ${error.message}. See console for details.`,
+                );
+              }
             }}
           >
-            View VoicePrint Assets
+            Check API Status
           </button>
           <button
             type="button"
@@ -623,7 +711,7 @@ export default function App() {
 
                   // Try a direct fetch with detailed logging
                   const testPayload = {
-                    query: "How does something like this happen",
+                    query: "I'm in the town, lets roam around",
                   };
 
                   console.log("Test payload:", JSON.stringify(testPayload));
