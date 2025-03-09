@@ -1,10 +1,20 @@
 
 // API utility functions
+import { mockApiHealth, mockEmotionApi } from './mockApi';
+
+// Flag to control whether we use the real API or mock
+const USE_MOCK_API = true;
 
 /**
  * Simple health check for the emotion API to determine if it's available
  */
 export const checkEmotionApiHealth = async (): Promise<boolean> => {
+  // If we're using mocks, return the mock implementation
+  if (USE_MOCK_API) {
+    console.log("Using mock API health check...");
+    return await mockApiHealth();
+  }
+
   try {
     console.log("Checking emotion API health...");
     
@@ -76,6 +86,12 @@ export const testEmotionApi = async (query: string): Promise<{
   parsedEmotion?: string;
   apiEndpoint?: string;
 }> => {
+  // If we're using mocks, return the mock implementation
+  if (USE_MOCK_API) {
+    console.log("Using mock emotion API...");
+    return await mockEmotionApi(query);
+  }
+
   // Define multiple endpoints to try in case the primary one fails
   const endpoints = [
     'https://emorag-arangodb-py-547962548252.us-central1.run.app/extract-emotions/qa',

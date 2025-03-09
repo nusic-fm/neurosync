@@ -6,6 +6,16 @@ import EmotionWheel from './components/EmotionWheel'
 interface EmotionResponse {
   id: string;
   summary: string;
+
+// Import the flag to determine if we're using mock API
+import { useState, useEffect, useRef } from 'react'
+import './App.css'
+import { checkEmotionApiHealth, testEmotionApi } from './utils'
+import EmotionWheel from './components/EmotionWheel'
+
+// Flag to indicate we're using mock APIs 
+const USE_MOCK_API = true;
+
 }
 
 export default function App() {
@@ -214,65 +224,22 @@ export default function App() {
 
         // Check if TTS API is available before attempting to generate speech
           try {
-            const ttsApiCheck = await fetch('https://tts-twitter-agent-547962548252.us-central1.run.app/health', {
-              method: 'GET',
-              signal: AbortSignal.timeout(5000),
-              mode: 'cors',
-              cache: 'no-cache'
-            }).catch(() => null);
-
-            if (ttsApiCheck) {
+            // Use mock TTS API instead of real one
+            import('./mockApi').then(async ({ mockSpeechSynthesis }) => {
               // Generate TTS with the emotion
               setProcessingStage('speech');
               setStatusMessage('Generating emotional speech...');
-              console.log("Calling TTS API...");
+              console.log("Calling TTS API (mock)...");
 
               try {
-                const ttsResponse = await fetch('https://tts-twitter-agent-547962548252.us-central1.run.app/llasa-voice-synthesizer', {
-                  method: 'POST',
-                  headers: { 
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                  },
-                  body: JSON.stringify({
-                    text: inputText,
-                    audio_url: ''
-                  }),
-                  // Extend timeout for TTS as it might take longer
-                  signal: AbortSignal.timeout(30000),
-                  // Add mode for CORS
-                  mode: 'cors',
-                  // Add cache control
-                  cache: 'no-cache'
-                });
-
-                if (!ttsResponse.ok) {
-                  throw new Error(`TTS API returned status ${ttsResponse.status}: ${ttsResponse.statusText}`);
-                }
-
-                // First try to parse as JSON
-                let ttsData;
-                try {
-                  ttsData = await ttsResponse.json();
-                  console.log("TTS API response (JSON):", ttsData);
-                } catch (parseError) {
-                  // If JSON parsing fails, try as text
-                  const textResponse = await ttsResponse.text();
-                  console.log("TTS API response (Text):", textResponse);
-
-                  // Try to extract URL from text if it's not JSON
-                  if (textResponse.includes('http')) {
-                    ttsData = { url: textResponse.trim() };
-                  } else {
-                    throw new Error("Unable to parse TTS API response");
-                  }
-                }
-
-                if (ttsData && ttsData.url) {
-                  setSpeechUrl(ttsData.url);
-                  console.log("Speech URL successfully set to:", ttsData.url);
+                // Use mock speech synthesis
+                const speechUrl = await mockSpeechSynthesis(inputText);
+                console.log("Mock TTS response:", speechUrl);
+                
+                if (speechUrl) {
+                  setSpeechUrl(speechUrl);
+                  console.log("Speech URL successfully set to:", speechUrl);
                   setStatusMessage('Speech generated successfully!');
-                  console.log("Speech URL set to:", ttsData.url);
                 } else {
                   throw new Error("No URL returned from TTS API");
                 }
@@ -281,10 +248,10 @@ export default function App() {
                 setStatusMessage(`Speech generation completed with emotion: ${emotionId}. Speech generation failed: (${ttsApiError.message})`);
                 // Don't throw the error - we can still show the emotion even if TTS fails
               }
-            } else {
-              // TTS API is unavailable, but we still have the emotion result
+            }).catch(importError => {
+              console.error("Error importing mock API:", importError);
               setStatusMessage(`Emotion detected: ${emotionId}. TTS API is currently unavailable.`);
-            }
+            });
           } catch (ttsCheckError) {
             console.error("TTS API check failed:", ttsCheckError);
             setStatusMessage(`Emotion detected: ${emotionId}. TTS API is currently unavailable.`);
@@ -356,6 +323,7 @@ export default function App() {
       <div className="api-status">
         <div className={`indicator ${apiStatus}`}></div>
         <span>
+          {USE_MOCK_API ? '(MOCK MODE) ' : ''}
           Emotion API: {apiStatus === 'online' ? 'Online' : apiStatus === 'offline' ? 'Offline' : 'Unknown'}
         </span>
       </div>
