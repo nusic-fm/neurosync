@@ -318,6 +318,8 @@ body {
   padding: 0.25rem 0.75rem;
   border-radius: 50px;
   font-size: 1.2rem;
+  font-weight: normal;
+  color: #ff6b6b;
 }
 
 .status-message {
@@ -513,4 +515,75 @@ body {
 
 .api-indicator.unknown {
   background-color: #FFA000;
+}
+
+.debug-section {
+  margin-top: 2rem;
+  border-top: 1px solid #eee;
+  padding-top: 1rem;
+}
+
+.debug-section summary {
+  cursor: pointer;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.debug-section summary:hover {
+  color: #333;
+}
+
+.debug-tools {
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  margin-top: 0.5rem;
+}
+
+.debug-tools h3 {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.debug-button {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  margin: 0.5rem 0;
+}
+
+.debug-button:hover {
+  background-color: #5a6268;
+}
+
+.debug-note {
+  font-size: 0.8rem;
+  color: #6c757d;
+  font-style: italic;
+  margin-top: 0.5rem;
+}
+
+.api-status-indicator {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.api-status-indicator.online {
+  background-color: #28a745;
+  color: white;
+}
+
+.api-status-indicator.offline {
+  background-color: #dc3545;
+  color: white;
+}
+
+.api-status-indicator.unknown {
+  background-color: #ffc107;
+  color: #212529;
 }

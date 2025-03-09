@@ -365,20 +365,56 @@ export default function App() {
                 setStatusMessage('Checking API connection...');
                 setErrorMessage('');
                 
-                const isOnline = await checkEmotionApiHealth();
+                // First log the full diagnostic info
+                console.log("API DIAGNOSTICS START -----");
+                console.log("Browser info:", navigator.userAgent);
+                console.log("Current time:", new Date().toISOString());
                 
-                setApiStatus(isOnline ? 'online' : 'offline');
-                setStatusMessage(isOnline ? 
-                  'API connection successful! The emotion API is online.' : 
-                  'API connection failed. The emotion API appears to be offline.');
-                
-                if (!isOnline) {
-                  setErrorMessage('API server appears to be offline. Please try again later.');
+                // Try a direct fetch with detailed logging
+                try {
+                  console.log("Making direct API test call...");
+                  const directResponse = await fetch('https://emorag-arangodb-py-547962548252.us-central1.run.app/extract-emotions/qa', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Accept': 'application/json, text/plain, */*'
+                    },
+                    body: JSON.stringify({ query: "Test message from UI" }),
+                    mode: 'cors',
+                    cache: 'no-cache',
+                    signal: AbortSignal.timeout(15000)
+                  }).catch(e => {
+                    console.error("Direct fetch error:", e);
+                    throw e;
+                  });
+                  
+                  console.log("Direct API response status:", directResponse.status);
+                  console.log("Direct API response headers:", Object.fromEntries([...directResponse.headers]));
+                  
+                  const responseText = await directResponse.text();
+                  console.log("Direct API response text:", responseText);
+                  
+                  // Now use the utility function
+                  const isOnline = await checkEmotionApiHealth();
+                  console.log("API DIAGNOSTICS END -----");
+                  
+                  setApiStatus(isOnline ? 'online' : 'offline');
+                  setStatusMessage(isOnline ? 
+                    'API connection successful! The emotion API is online.' : 
+                    'API connection failed. The emotion API appears to be offline. See console for details.');
+                  
+                  if (!isOnline) {
+                    setErrorMessage('API server appears to be offline. Please check browser console for diagnostic information.');
+                  }
+                } catch (directError: any) {
+                  console.error("Direct API test failed:", directError);
+                  throw directError;
                 }
               } catch (error: any) {
+                console.error("API Connection Error:", error);
                 setApiStatus('offline');
                 setStatusMessage('API connection check failed');
-                setErrorMessage(`API Connection Error: ${error.message}`);
+                setErrorMessage(`API Connection Error: ${error.message}. See console for details.`);
               }
             }}
           >
@@ -504,6 +540,84 @@ export default function App() {
           <h2>Selected Emotion: <span className="emotion-tag">{selectedEmotion}</span></h2>
         </div>
       )}
+      
+      <div className="debug-section">
+        <details>
+          <summary>API Diagnostics (Expand for troubleshooting)</summary>
+          <div className="debug-tools">
+            <h3>Manual API Test</h3>
+            <p>Use this to directly test the Emotion API endpoint:</p>
+            <button
+              className="debug-button"
+              onClick={async () => {
+                try {
+                  setStatusMessage('Running manual API test...');
+                  setErrorMessage('');
+                  
+                  console.log("MANUAL API TEST START -----");
+                  
+                  // Try a direct fetch with detailed logging
+                  const testPayload = { query: "I'm in the town, lets roam around" };
+                  
+                  console.log("Test payload:", JSON.stringify(testPayload));
+                  console.log("Sending manual test to API...");
+                  
+                  const testResponse = await fetch('https://emorag-arangodb-py-547962548252.us-central1.run.app/extract-emotions/qa', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Accept': 'application/json, text/plain, */*'
+                    },
+                    body: JSON.stringify(testPayload),
+                    mode: 'cors',
+                    cache: 'no-cache',
+                    credentials: 'omit',
+                    redirect: 'follow',
+                    signal: AbortSignal.timeout(20000)
+                  }).catch(e => {
+                    console.error("Manual test fetch error:", e);
+                    throw e;
+                  });
+                  
+                  console.log("Manual test response status:", testResponse.status);
+                  console.log("Manual test response headers:", Object.fromEntries([...testResponse.headers]));
+                  
+                  if (testResponse.ok) {
+                    let responseContent;
+                    try {
+                      responseContent = await testResponse.json();
+                      console.log("Manual test response (JSON):", responseContent);
+                    } catch (jsonError) {
+                      responseContent = await testResponse.text();
+                      console.log("Manual test response (Text):", responseContent);
+                    }
+                    
+                    setStatusMessage(`Manual API test successful! Response received.`);
+                    console.log("MANUAL API TEST END -----");
+                  } else {
+                    const errorText = await testResponse.text().catch(() => "No error text available");
+                    console.error("Manual test error response:", errorText);
+                    throw new Error(`API returned status ${testResponse.status}: ${errorText}`);
+                  }
+                } catch (error: any) {
+                  console.error("Manual API test failed:", error);
+                  setErrorMessage(`Manual API test failed: ${error.message}`);
+                  setStatusMessage('Manual API test failed. See console for details.');
+                  console.log("MANUAL API TEST END (WITH ERROR) -----");
+                }
+              }}
+            >
+              Run Manual API Test
+            </button>
+            <p className="debug-note">
+              Note: Open your browser's developer console (F12 or right-click and select "Inspect") to see detailed logs from the API tests.
+            </p>
+            <h3>API Connection Status</h3>
+            <p>API endpoint: <code>https://emorag-arangodb-py-547962548252.us-central1.run.app/extract-emotions/qa</code></p>
+            <p>Current status: <span className={`api-status-indicator ${apiStatus}`}>{apiStatus}</span></p>
+          </div>
+        </details>
+      </div>
     </main>
   )
 }
