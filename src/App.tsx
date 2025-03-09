@@ -42,54 +42,7 @@ export default function App() {
       setProcessingStage('emotion');
       setStatusMessage('Checking API availability...');
 
-      // Check both APIs to ensure they're accessible
-      try {
-        // Define the health check function
-        const checkApiHealth = async (url: string, name: string) => {
-          try {
-            const response = await fetch(`${url}/health`, {
-              method: 'GET',
-              signal: AbortSignal.timeout(5000),
-              mode: 'cors',
-              cache: 'no-cache'
-            }).catch(() => null);
-
-            if (!response) {
-              throw new Error(`${name} API appears to be offline`);
-            }
-            return true;
-          } catch (error) {
-            console.error(`${name} API health check failed:`, error);
-            return false;
-          }
-        };
-
-        // Check emotion API
-        const emotionApiAlive = await checkApiHealth(
-          'https://emorag-arangodb-py-547962548252.us-central1.run.app', 
-          'Emotion'
-        );
-
-        // Check TTS API
-        const ttsApiAlive = await checkApiHealth(
-          'https://tts-twitter-agent-547962548252.us-central1.run.app', 
-          'TTS'
-        );
-
-        if (!emotionApiAlive && !ttsApiAlive) {
-          throw new Error('Both API servers appear to be offline. Please try again later.');
-        } else if (!emotionApiAlive) {
-          throw new Error('Emotion API server appears to be offline. Please try again later.');
-        } else if (!ttsApiAlive) {
-          throw new Error('TTS API server appears to be offline. Please try again later.');
-        }
-
-        setStatusMessage('APIs are available. Processing your request...');
-      } catch (apiCheckError: any) {
-        clearInterval(spinInterval);
-        throw apiCheckError;
-      }
-
+      // Skip health checks and directly call the APIs
       setStatusMessage('Analyzing text emotions...');
       console.log("Calling emotion API...");
 
@@ -367,54 +320,44 @@ export default function App() {
                 console.log("Testing emotion API with:", inputText);
 
                 // First check if the API is available
+                // Skip health check and directly make the API call
+                console.log("Skipping health check, directly testing the API endpoint");
                 try {
-                  const healthCheck = await fetch('https://emorag-arangodb-py-547962548252.us-central1.run.app/health', {
-                    method: 'GET',
-                    signal: AbortSignal.timeout(5000),
-                    mode: 'cors',
-                    cache: 'no-cache'
-                  });
-
-                  if (!healthCheck.ok) {
-                    throw new Error(`API health check failed with status ${healthCheck.status}`);
-                  }
-
-                  console.log("API health check successful, proceeding with test");
-                } catch (healthError: any) {
-                  console.error("API health check failed:", healthError);
-                  throw new Error("API server appears to be offline. Please try again later.");
-                }
-
-                // Now make the actual API call
-                try {
+                  console.log("Making API call with payload:", JSON.stringify({ query: inputText }));
+                  
                   const emotionResponse = await fetch('https://emorag-arangodb-py-547962548252.us-central1.run.app/extract-emotions/qa', {
                     method: 'POST',
                     headers: { 
-                      'Content-Type': 'application/json',
-                      'Accept': 'text/plain'
+                      'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ query: inputText }),
-                    signal: AbortSignal.timeout(30000),
-                    mode: 'cors',
-                    cache: 'no-cache',
-                    credentials: 'omit'
+                    signal: AbortSignal.timeout(30000)
+                  }).catch(error => {
+                    console.error("Fetch error:", error);
+                    throw new Error(`Failed to fetch: ${error.message}`);
                   });
 
-                  if (!emotionResponse.ok) {
-                    const errorText = await emotionResponse.text().catch(() => "No error details available");
-                    console.error("API Error Response:", emotionResponse.status, errorText);
-                    throw new Error(`API returned status ${emotionResponse.status}: ${errorText}`);
+                  if (!emotionResponse || !emotionResponse.ok) {
+                    const errorStatus = emotionResponse ? emotionResponse.status : "unknown";
+                    const errorText = emotionResponse ? 
+                                      await emotionResponse.text().catch(() => "No error details available") : 
+                                      "No response received";
+                    console.error("API Error Response:", errorStatus, errorText);
+                    throw new Error(`API returned status ${errorStatus}: ${errorText}`);
                   }
 
+                  // Try to get response as text
                   const responseText = await emotionResponse.text();
                   console.log("API Response:", responseText);
 
-                  // Match the same parsing logic used in the main function
+                  // Parse the response according to the example
+                  // Example: "Summary: abandoned"
                   let emotion = 'neutral';
+                  
                   if (responseText.includes('Summary:')) {
                     emotion = responseText.split('Summary:')[1]?.trim().toLowerCase() || 'neutral';
                     console.log("Parsed test emotion from 'Summary:' format:", emotion);
-                  } else {
+                  } else if (responseText.includes(':')) {
                     emotion = responseText.split(':')[1]?.trim().toLowerCase() || 'neutral';
                     console.log("Parsed test emotion from ':' format:", emotion);
                   }
