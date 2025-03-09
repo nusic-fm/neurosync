@@ -210,7 +210,7 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   color: rgba(255, 255, 255, 0.9);
 }
 
@@ -220,6 +220,24 @@
   border-radius: 50%;
   background-color: rgba(0, 200, 255, 0.8);
   animation: pulse 1s infinite alternate;
+}
+
+.detected-emotion {
+  color: #00ffaa;
+  text-shadow: 0 0 10px rgba(0, 255, 170, 0.8);
+  font-size: 1.1rem;
+  animation: highlight-text 0.5s ease-in-out;
+  letter-spacing: 1px;
+}
+
+.detected-emotion strong {
+  text-transform: uppercase;
+}
+
+@keyframes highlight-text {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
 }
 
 @keyframes pulse {
