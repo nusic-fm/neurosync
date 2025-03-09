@@ -44,9 +44,6 @@ export const mockApiHealth = async (): Promise<boolean> => {
 };
 
 // Mock the emotion API
-// Export mockEmotionAnalysis directly so it can be imported in App.tsx
-export { mockEmotionAnalysis };
-
 export const mockEmotionApi = async (query: string): Promise<{
   success: boolean;
   status?: number;
