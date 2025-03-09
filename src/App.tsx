@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import emotionWheel from './assets/wheel-of-emotions.webp'
@@ -19,12 +18,12 @@ export default function App() {
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [processingStage, setProcessingStage] = useState<string>('');
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!inputText.trim()) return;
-    
+
     try {
       // Reset previous state
       setIsProcessing(true);
@@ -33,25 +32,25 @@ export default function App() {
       setErrorMessage('');
       setStatusMessage('Processing your request...');
       setProcessingStage('initializing');
-      
+
       // Start the wheel spinning animation
       const spinInterval = setInterval(() => {
         setWheelRotation(prev => (prev + 5) % 360);
       }, 50);
-      
+
       // Extract emotions from text
       setProcessingStage('emotion');
       setStatusMessage('Analyzing text emotions...');
       console.log("Calling emotion API...");
-      
+
       try {
         // Emotion Analysis API Call
         setProcessingStage('emotion');
         setStatusMessage('Analyzing text emotions...');
         console.log("Calling emotion API...");
-        
+
         let emotionId = 'neutral';
-        
+
         try {
           const emotionResponse = await fetch('https://emorag-arangodb-py-547962548252.us-central1.run.app/extract-emotions/qa', {
             method: 'POST',
@@ -60,15 +59,15 @@ export default function App() {
             // Adding timeout to prevent long-hanging requests
             signal: AbortSignal.timeout(10000)
           });
-          
+
           if (!emotionResponse.ok) {
             throw new Error(`Emotion API returned status ${emotionResponse.status}: ${emotionResponse.statusText}`);
           }
-          
+
           const emotionData = await emotionResponse.text();
           console.log("Emotion API response:", emotionData);
           setStatusMessage(`Detected emotion: ${emotionData}`);
-          
+
           emotionId = emotionData.split(':')[1]?.trim().toLowerCase() || 'neutral';
           console.log("Extracted emotion ID:", emotionId);
         } catch (emotionApiError: any) {
@@ -76,11 +75,11 @@ export default function App() {
           setStatusMessage(`Emotion API failed. Using default emotion: neutral. (${emotionApiError.message})`);
           // Continue with default emotion even if emotion API fails
         }
-        
+
         // Stop spinning and highlight the emotion
         clearInterval(spinInterval);
         setSelectedEmotion(emotionId);
-        
+
         // Determine final wheel position based on emotion
         const emotionPositions: Record<string, number> = {
           happy: 180,
@@ -92,15 +91,15 @@ export default function App() {
           neutral: 225,
           // Add more emotion mappings as needed
         };
-        
+
         // Set the wheel to the emotion position or a random position if not mapped
         setWheelRotation(emotionPositions[emotionId] || Math.random() * 360);
-        
+
         // Generate TTS with the emotion
         setProcessingStage('speech');
         setStatusMessage('Generating emotional speech...');
         console.log("Calling TTS API...");
-        
+
         try {
           const ttsResponse = await fetch('https://tts-twitter-agent-547962548252.us-central1.run.app/llasa-voice-synthesizer', {
             method: 'POST',
@@ -112,14 +111,14 @@ export default function App() {
             // Adding timeout to prevent long-hanging requests
             signal: AbortSignal.timeout(20000)
           });
-          
+
           if (!ttsResponse.ok) {
             throw new Error(`TTS API returned status ${ttsResponse.status}: ${ttsResponse.statusText}`);
           }
-          
+
           const ttsData = await ttsResponse.json();
           console.log("TTS API response:", ttsData);
-          
+
           if (ttsData.url) {
             setSpeechUrl(ttsData.url);
             setStatusMessage('Speech generated successfully!');
@@ -136,13 +135,13 @@ export default function App() {
         clearInterval(spinInterval);
         throw apiError;
       }
-      
+
     } catch (error: any) {
       console.error('Error processing request:', error);
-      
+
       // Determine a more user-friendly error message based on the error type
       let userErrorMessage = 'Something went wrong';
-      
+
       if (error instanceof TypeError && error.message.includes('fetch')) {
         userErrorMessage = 'Network error: Could not connect to the API server. Please check your internet connection and try again.';
       } else if (error.name === 'AbortError') {
@@ -150,16 +149,16 @@ export default function App() {
       } else if (error.message) {
         userErrorMessage = error.message;
       }
-      
+
       setErrorMessage(`Error: ${userErrorMessage}`);
       setStatusMessage('Failed to process request');
-      
+
       // Show a mock emotion if the API calls fail to demonstrate the UI
       if (!selectedEmotion) {
         const mockEmotions = ['happy', 'sad', 'angry', 'surprised'];
         const randomEmotion = mockEmotions[Math.floor(Math.random() * mockEmotions.length)];
         setSelectedEmotion(randomEmotion);
-        
+
         // Mock wheel position for the random emotion
         const emotionPositions: Record<string, number> = {
           happy: 180,
@@ -174,13 +173,13 @@ export default function App() {
       setProcessingStage('complete');
     }
   };
-  
+
   const playAudio = () => {
     if (audioRef.current && speechUrl) {
       setStatusMessage('Playing audio...');
-      
+
       const playPromise = audioRef.current.play();
-      
+
       if (playPromise !== undefined) {
         playPromise
           .then(() => {
@@ -194,7 +193,7 @@ export default function App() {
       }
     }
   };
-  
+
   useEffect(() => {
     if (speechUrl && audioRef.current) {
       audioRef.current.src = speechUrl;
@@ -202,11 +201,11 @@ export default function App() {
       playAudio();
     }
   }, [speechUrl]);
-  
+
   return (
     <main className="app-container">
       <h1 className="app-title">Emotional Speech Generator</h1>
-      
+
       <div className="wheel-container">
         <div className="wheel-pointer"></div>
         <div 
@@ -219,7 +218,7 @@ export default function App() {
           <div className="emotion-highlight">{selectedEmotion}</div>
         )}
       </div>
-      
+
       <form onSubmit={handleSubmit} className="input-form">
         <input
           type="text"
@@ -236,21 +235,21 @@ export default function App() {
         >
           {isProcessing ? `Processing (${processingStage})...` : 'Generate Speech'}
         </button>
-        
+
         {statusMessage && (
           <div className="status-message">
             <div className={`status-indicator ${isProcessing ? 'active' : ''}`}></div>
             {statusMessage}
           </div>
         )}
-        
+
         {errorMessage && (
           <div className="error-message">
             {errorMessage}
           </div>
         )}
       </form>
-      
+
       {speechUrl && (
         <div className="audio-player">
           <div className="audio-status">
@@ -283,7 +282,7 @@ export default function App() {
           </div>
         </div>
       )}
-      
+
       {selectedEmotion && (
         <div className="result-container">
           <h2>Selected Emotion: <span className="emotion-tag">{selectedEmotion}</span></h2>

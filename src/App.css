@@ -36,10 +36,50 @@ body {
   font-size: 3rem;
   text-transform: uppercase;
   letter-spacing: 2px;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
   color: var(--highlight-color);
   text-shadow: 0 0 10px rgba(32, 223, 223, 0.5);
   text-align: center;
+}
+
+.connection-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: var(--text-color);
+  margin-bottom: 1.5rem;
+  background-color: var(--card-bg);
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+}
+
+.connection-status span {
+  padding: 0.2rem 0.5rem;
+  border-radius: 12px;
+  font-weight: bold;
+}
+
+.connection-status .unknown {
+  background-color: var(--secondary-color);
+  color: white;
+}
+
+.connection-status .checking {
+  background-color: #ffa500;
+  color: black;
+  animation: blink 1s infinite alternate;
+}
+
+.connection-status .online {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.connection-status .offline {
+  background-color: #f44336;
+  color: white;
 }
 
 .wheel-container {
