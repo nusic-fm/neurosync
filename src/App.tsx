@@ -151,20 +151,66 @@ export default function App() {
         clearInterval(spinInterval);
         setSelectedEmotion(emotionId);
 
-        // Determine final wheel position based on emotion
+        // More comprehensive mapping of emotions to wheel positions
         const emotionPositions: Record<string, number> = {
-          happy: 180,
-          sad: 0,
-          angry: 270,
-          fearful: 90,
-          surprised: 135,
-          disgusted: 315,
-          neutral: 225,
-          // Add more emotion mappings as needed
+          // Primary emotions
+          joy: 0,
+          love: 60, 
+          anger: 120,
+          sadness: 180,
+          fear: 240,
+          surprise: 300,
+          
+          // Secondary emotions - joy family
+          happy: 0,
+          happiness: 0,
+          serenity: 0,
+          ecstasy: 0,
+          cheerful: 0,
+          
+          // Secondary emotions - love family
+          affection: 60,
+          romance: 60,
+          compassion: 60,
+          
+          // Secondary emotions - anger family
+          angry: 120,
+          annoyance: 120,
+          rage: 120,
+          disgust: 120,
+          disgusted: 120,
+          
+          // Secondary emotions - sadness family
+          sad: 180,
+          disappointment: 180,
+          grief: 180,
+          loneliness: 180,
+          depressed: 180,
+          
+          // Secondary emotions - fear family
+          fearful: 240,
+          anxiety: 240,
+          terror: 240,
+          insecurity: 240,
+          worried: 240,
+          
+          // Secondary emotions - surprise family
+          surprised: 300,
+          amazement: 300,
+          shock: 300,
+          distraction: 300,
+          astonished: 300,
+          
+          // Neutral
+          neutral: 225
         };
 
-        // Set the wheel to the emotion position or a random position if not mapped
-        setWheelRotation(emotionPositions[emotionId] || Math.random() * 360);
+        // Set the wheel to the emotion position or a balanced position if not mapped
+        const wheelPosition = emotionPositions[emotionId.toLowerCase()] !== undefined 
+          ? emotionPositions[emotionId.toLowerCase()] 
+          : 225; // Default to a neutral-ish position
+        
+        setWheelRotation(wheelPosition);
 
         // Check if TTS API is available before attempting to generate speech
           try {
