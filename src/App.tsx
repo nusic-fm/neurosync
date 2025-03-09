@@ -440,13 +440,13 @@ export default function App() {
               setErrorMessage(`Emotion API Test Error: ${error.message}`);
               setStatusMessage('Emotion API test failed');
 
-                // Reset the wheel and emotion when there's an error
-                setSelectedEmotion(null);
-                setWheelRotation(0);
-              } finally {
-                setIsProcessing(false);
-              }
-            }}
+              // Reset the wheel and emotion when there's an error
+              setSelectedEmotion(null);
+              setWheelRotation(0);
+            } finally {
+              setIsProcessing(false);
+            }
+          }}
           >
             Test Emotion API Only
           </button>
