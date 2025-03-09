@@ -204,6 +204,71 @@ body {
   font-size: 1.2rem;
 }
 
+.status-message {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background-color: rgba(32, 223, 223, 0.2);
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.status-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: var(--highlight-color);
+}
+
+.status-indicator.active {
+  animation: blink 1s infinite alternate;
+}
+
+.error-message {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background-color: rgba(255, 71, 169, 0.2);
+  border-radius: 8px;
+  color: #ff47a9;
+  font-size: 0.9rem;
+}
+
+.audio-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1rem;
+  font-weight: bold;
+}
+
+.audio-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: var(--secondary-color);
+}
+
+.audio-indicator.playing {
+  animation: pulse 1s infinite;
+}
+
+.audio-url {
+  margin-top: 1rem;
+  font-size: 0.8rem;
+}
+
+.audio-url a {
+  color: var(--highlight-color);
+  text-decoration: underline;
+}
+
+@keyframes blink {
+  0% { opacity: 0.4; }
+  100% { opacity: 1; }
+}
+
 @keyframes pulse {
   0% {
     transform: translate(-50%, -50%) scale(1);
