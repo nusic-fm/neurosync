@@ -366,51 +366,89 @@ export default function App() {
                 
                 console.log("Testing emotion API with:", inputText);
                 
-                const emotionResponse = await fetch('https://emorag-arangodb-py-547962548252.us-central1.run.app/extract-emotions/qa', {
-                  method: 'POST',
-                  headers: { 
-                    'Content-Type': 'application/json',
-                    'Accept': 'text/plain'
-                  },
-                  body: JSON.stringify({ query: inputText }),
-                  signal: AbortSignal.timeout(30000)
-                });
-                
-                if (!emotionResponse.ok) {
-                  throw new Error(`API returned status ${emotionResponse.status}`);
+                // First check if the API is available
+                try {
+                  const healthCheck = await fetch('https://emorag-arangodb-py-547962548252.us-central1.run.app/health', {
+                    method: 'GET',
+                    signal: AbortSignal.timeout(5000),
+                    mode: 'cors',
+                    cache: 'no-cache'
+                  });
+                  
+                  if (!healthCheck.ok) {
+                    throw new Error(`API health check failed with status ${healthCheck.status}`);
+                  }
+                  
+                  console.log("API health check successful, proceeding with test");
+                } catch (healthError: any) {
+                  console.error("API health check failed:", healthError);
+                  throw new Error("API server appears to be offline. Please try again later.");
                 }
                 
-                const responseText = await emotionResponse.text();
-                console.log("API Response:", responseText);
-                
-                let emotion = 'neutral';
-                if (responseText.includes('Summary:')) {
-                  emotion = responseText.split('Summary:')[1]?.trim().toLowerCase() || 'neutral';
-                } else if (responseText.includes(':')) {
-                  emotion = responseText.split(':')[1]?.trim().toLowerCase() || 'neutral';
-                } else {
-                  emotion = responseText.trim().toLowerCase() || 'neutral';
+                // Now make the actual API call
+                try {
+                  const emotionResponse = await fetch('https://emorag-arangodb-py-547962548252.us-central1.run.app/extract-emotions/qa', {
+                    method: 'POST',
+                    headers: { 
+                      'Content-Type': 'application/json',
+                      'Accept': 'text/plain'
+                    },
+                    body: JSON.stringify({ query: inputText }),
+                    signal: AbortSignal.timeout(30000),
+                    mode: 'cors',
+                    cache: 'no-cache',
+                    credentials: 'omit'
+                  });
+                  
+                  if (!emotionResponse.ok) {
+                    const errorText = await emotionResponse.text().catch(() => "No error details available");
+                    console.error("API Error Response:", emotionResponse.status, errorText);
+                    throw new Error(`API returned status ${emotionResponse.status}: ${errorText}`);
+                  }
+                  
+                  const responseText = await emotionResponse.text();
+                  console.log("API Response:", responseText);
+                  
+                  let emotion = 'neutral';
+                  if (responseText.includes('Summary:')) {
+                    emotion = responseText.split('Summary:')[1]?.trim().toLowerCase() || 'neutral';
+                  } else if (responseText.includes(':')) {
+                    emotion = responseText.split(':')[1]?.trim().toLowerCase() || 'neutral';
+                  } else {
+                    emotion = responseText.trim().toLowerCase() || 'neutral';
+                  }
+                  
+                  // Clean up the emotion string (remove any non-alphanumeric characters)
+                  emotion = emotion.replace(/[^a-z]/g, '');
+                  if (!emotion) emotion = 'neutral';
+                  
+                  setSelectedEmotion(emotion);
+                  setStatusMessage(`Emotion API test successful! Emotion: ${emotion}`);
+                  
+                  // Set wheel position
+                  const emotionPositions: Record<string, number> = {
+                    happy: 180,
+                    sad: 0,
+                    angry: 270,
+                    fearful: 90,
+                    surprised: 135,
+                    disgusted: 315,
+                    neutral: 225,
+                  };
+                  setWheelRotation(emotionPositions[emotion] || Math.random() * 360);
+                } catch (apiCallError: any) {
+                  console.error("API Call Error:", apiCallError);
+                  throw apiCallError;
                 }
-                
-                setSelectedEmotion(emotion);
-                setStatusMessage(`Emotion API test successful! Emotion: ${emotion}`);
-                
-                // Set wheel position
-                const emotionPositions: Record<string, number> = {
-                  happy: 180,
-                  sad: 0,
-                  angry: 270,
-                  fearful: 90,
-                  surprised: 135,
-                  disgusted: 315,
-                  neutral: 225,
-                };
-                setWheelRotation(emotionPositions[emotion] || Math.random() * 360);
                 
               } catch (error: any) {
                 console.error("Emotion API Test Error:", error);
                 setErrorMessage(`Emotion API Test Error: ${error.message}`);
                 setStatusMessage('Emotion API test failed');
+                
+                // Reset the wheel and emotion when there's an error
+                setSelectedEmotion(null);
+                setWheelRotation(0);
               } finally {
                 setIsProcessing(false);
               }
@@ -422,6 +460,7 @@ export default function App() {
 
         {statusMessage && (
           <div className="status-message">
+            {isProcessing && <div className="testing-indicator"></div>}
             <div className={`status-indicator ${isProcessing ? 'active' : ''}`}></div>
             {statusMessage}
           </div>
