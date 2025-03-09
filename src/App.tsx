@@ -40,6 +40,23 @@ export default function App() {
 
       // Extract emotions from text
       setProcessingStage('emotion');
+      setStatusMessage('Checking API availability...');
+      
+      // First, perform a quick check to see if APIs are accessible
+      try {
+        const apiCheckResponse = await fetch('https://emorag-arangodb-py-547962548252.us-central1.run.app/health', {
+          method: 'GET',
+          signal: AbortSignal.timeout(5000)
+        }).catch(() => null);
+        
+        if (!apiCheckResponse) {
+          throw new Error('API servers appear to be offline. Please try again later.');
+        }
+      } catch (apiCheckError: any) {
+        clearInterval(spinInterval);
+        throw apiCheckError;
+      }
+      
       setStatusMessage('Analyzing text emotions...');
       console.log("Calling emotion API...");
 
@@ -70,10 +87,14 @@ export default function App() {
 
           emotionId = emotionData.split(':')[1]?.trim().toLowerCase() || 'neutral';
           console.log("Extracted emotion ID:", emotionId);
+          
+          // Only set the emotion if we actually got a response
+          setSelectedEmotion(emotionId);
         } catch (emotionApiError: any) {
           console.error("Emotion API Error:", emotionApiError);
-          setStatusMessage(`Emotion API failed. Using default emotion: neutral. (${emotionApiError.message})`);
-          // Continue with default emotion even if emotion API fails
+          setStatusMessage(`Emotion API failed. (${emotionApiError.message})`);
+          // Don't continue with a default emotion - throw the error up
+          throw emotionApiError;
         }
 
         // Stop spinning and highlight the emotion
@@ -152,22 +173,11 @@ export default function App() {
 
       setErrorMessage(`Error: ${userErrorMessage}`);
       setStatusMessage('Failed to process request');
-
-      // Show a mock emotion if the API calls fail to demonstrate the UI
-      if (!selectedEmotion) {
-        const mockEmotions = ['happy', 'sad', 'angry', 'surprised'];
-        const randomEmotion = mockEmotions[Math.floor(Math.random() * mockEmotions.length)];
-        setSelectedEmotion(randomEmotion);
-
-        // Mock wheel position for the random emotion
-        const emotionPositions: Record<string, number> = {
-          happy: 180,
-          sad: 0,
-          angry: 270,
-          surprised: 135,
-        };
-        setWheelRotation(emotionPositions[randomEmotion]);
-      }
+      
+      // Reset emotion display when APIs fail
+      setSelectedEmotion(null);
+      // Stop the wheel at a neutral position
+      setWheelRotation(0);
     } finally {
       setIsProcessing(false);
       setProcessingStage('complete');
