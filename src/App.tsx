@@ -317,9 +317,39 @@ export default function App() {
     }
   }, [speechUrl]);
 
+  // Generate particles on component mount
+  useEffect(() => {
+    const particlesContainer = document.querySelector('.particles');
+    if (particlesContainer) {
+      // Clear existing particles
+      particlesContainer.innerHTML = '';
+      
+      // Create particles
+      for (let i = 0; i < 30; i++) {
+        const particle = document.createElement('div');
+        particle.classList.add('particle');
+        
+        // Random positioning
+        const posX = Math.random() * 100;
+        const delay = Math.random() * 15;
+        const size = 1 + Math.random() * 2;
+        
+        particle.style.left = `${posX}%`;
+        particle.style.animationDelay = `${delay}s`;
+        particle.style.width = `${size}px`;
+        particle.style.height = `${size}px`;
+        
+        particlesContainer.appendChild(particle);
+      }
+    }
+  }, []);
+
   return (
     <main className="app-container">
-      {/* Subtle scanline effect */}
+      {/* Particle system */}
+      <div className="particles"></div>
+      
+      {/* Enhanced scanline effect */}
       <div className="scanline"></div>
       
       <h1 className="app-title">NEURO<span>SYNC</span> 3.0</h1>
