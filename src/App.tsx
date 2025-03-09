@@ -412,31 +412,30 @@ export default function App() {
                 // Parse the emotion from the test result
                 let emotion = testResult.parsedEmotion || 'neutral';
                 console.log("Test parsed emotion:", emotion);
-                  
-                  // Clean up the emotion string (remove any non-alphanumeric characters)
-                  emotion = emotion.replace(/[^a-z]/g, '');
-                  if (!emotion) emotion = 'neutral';
+                
+                // Clean up the emotion string (remove any non-alphanumeric characters)
+                emotion = emotion.replace(/[^a-z]/g, '');
+                if (!emotion) emotion = 'neutral';
 
-                  setSelectedEmotion(emotion);
-                  setStatusMessage(`Emotion API test successful! Emotion: ${emotion}`);
+                setSelectedEmotion(emotion);
+                setStatusMessage(`Emotion API test successful! Emotion: ${emotion}`);
 
-                  // Set wheel position
-                  const emotionPositions: Record<string, number> = {
-                    happy: 180,
-                    sad: 0,
-                    angry: 270,
-                    fearful: 90,
-                    surprised: 135,
-                    disgusted: 315,
-                    neutral: 225,
-                  };
-                  setWheelRotation(emotionPositions[emotion] || Math.random() * 360);
-                } catch (apiCallError: any) {
-                  console.error("API Call Error:", apiCallError);
-                  throw apiCallError;
-                }
-
-              } catch (error: any) {
+                // Set wheel position
+                const emotionPositions: Record<string, number> = {
+                  happy: 180,
+                  sad: 0,
+                  angry: 270,
+                  fearful: 90,
+                  surprised: 135,
+                  disgusted: 315,
+                  neutral: 225,
+                };
+                setWheelRotation(emotionPositions[emotion] || Math.random() * 360);
+              } catch (apiCallError: any) {
+                console.error("API Call Error:", apiCallError);
+                throw apiCallError;
+              }
+            } catch (error: any) {
                 console.error("Emotion API Test Error:", error);
                 setErrorMessage(`Emotion API Test Error: ${error.message}`);
                 setStatusMessage('Emotion API test failed');
