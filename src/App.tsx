@@ -42,16 +42,49 @@ export default function App() {
       setProcessingStage('emotion');
       setStatusMessage('Checking API availability...');
       
-      // First, perform a quick check to see if APIs are accessible
+      // Check both APIs to ensure they're accessible
       try {
-        const apiCheckResponse = await fetch('https://emorag-arangodb-py-547962548252.us-central1.run.app/health', {
-          method: 'GET',
-          signal: AbortSignal.timeout(5000)
-        }).catch(() => null);
+        // Define the health check function
+        const checkApiHealth = async (url: string, name: string) => {
+          try {
+            const response = await fetch(`${url}/health`, {
+              method: 'GET',
+              signal: AbortSignal.timeout(5000),
+              mode: 'cors',
+              cache: 'no-cache'
+            }).catch(() => null);
+            
+            if (!response) {
+              throw new Error(`${name} API appears to be offline`);
+            }
+            return true;
+          } catch (error) {
+            console.error(`${name} API health check failed:`, error);
+            return false;
+          }
+        };
+
+        // Check emotion API
+        const emotionApiAlive = await checkApiHealth(
+          'https://emorag-arangodb-py-547962548252.us-central1.run.app', 
+          'Emotion'
+        );
         
-        if (!apiCheckResponse) {
-          throw new Error('API servers appear to be offline. Please try again later.');
+        // Check TTS API
+        const ttsApiAlive = await checkApiHealth(
+          'https://tts-twitter-agent-547962548252.us-central1.run.app', 
+          'TTS'
+        );
+
+        if (!emotionApiAlive && !ttsApiAlive) {
+          throw new Error('Both API servers appear to be offline. Please try again later.');
+        } else if (!emotionApiAlive) {
+          throw new Error('Emotion API server appears to be offline. Please try again later.');
+        } else if (!ttsApiAlive) {
+          throw new Error('TTS API server appears to be offline. Please try again later.');
         }
+        
+        setStatusMessage('APIs are available. Processing your request...');
       } catch (apiCheckError: any) {
         clearInterval(spinInterval);
         throw apiCheckError;
@@ -74,7 +107,11 @@ export default function App() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ query: inputText }),
             // Adding timeout to prevent long-hanging requests
-            signal: AbortSignal.timeout(10000)
+            signal: AbortSignal.timeout(15000),
+            // Add mode for CORS
+            mode: 'cors',
+            // Add cache control
+            cache: 'no-cache'
           });
 
           if (!emotionResponse.ok) {
@@ -83,10 +120,20 @@ export default function App() {
 
           const emotionData = await emotionResponse.text();
           console.log("Emotion API response:", emotionData);
-          setStatusMessage(`Detected emotion: ${emotionData}`);
-
-          emotionId = emotionData.split(':')[1]?.trim().toLowerCase() || 'neutral';
+          
+          // Correct parsing based on your example
+          let parsedEmotion = '';
+          if (emotionData.includes(':')) {
+            parsedEmotion = emotionData.split(':')[1]?.trim().toLowerCase() || 'neutral';
+          } else if (emotionData.includes('Summary:')) {
+            parsedEmotion = emotionData.split('Summary:')[1]?.trim().toLowerCase() || 'neutral';
+          } else {
+            parsedEmotion = emotionData.trim().toLowerCase() || 'neutral';
+          }
+          
+          emotionId = parsedEmotion;
           console.log("Extracted emotion ID:", emotionId);
+          setStatusMessage(`Detected emotion: ${emotionId}`);
           
           // Only set the emotion if we actually got a response
           setSelectedEmotion(emotionId);
@@ -124,24 +171,47 @@ export default function App() {
         try {
           const ttsResponse = await fetch('https://tts-twitter-agent-547962548252.us-central1.run.app/llasa-voice-synthesizer', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
             body: JSON.stringify({
               text: inputText,
               audio_url: ''
             }),
-            // Adding timeout to prevent long-hanging requests
-            signal: AbortSignal.timeout(20000)
+            // Extend timeout for TTS as it might take longer
+            signal: AbortSignal.timeout(30000),
+            // Add mode for CORS
+            mode: 'cors',
+            // Add cache control
+            cache: 'no-cache'
           });
 
           if (!ttsResponse.ok) {
             throw new Error(`TTS API returned status ${ttsResponse.status}: ${ttsResponse.statusText}`);
           }
 
-          const ttsData = await ttsResponse.json();
-          console.log("TTS API response:", ttsData);
+          // First try to parse as JSON
+          let ttsData;
+          try {
+            ttsData = await ttsResponse.json();
+            console.log("TTS API response (JSON):", ttsData);
+          } catch (parseError) {
+            // If JSON parsing fails, try as text
+            const textResponse = await ttsResponse.text();
+            console.log("TTS API response (Text):", textResponse);
+            
+            // Try to extract URL from text if it's not JSON
+            if (textResponse.includes('http')) {
+              ttsData = { url: textResponse.trim() };
+            } else {
+              throw new Error("Unable to parse TTS API response");
+            }
+          }
 
-          if (ttsData.url) {
+          if (ttsData && ttsData.url) {
             setSpeechUrl(ttsData.url);
+            console.log("Speech URL successfully set to:", ttsData.url);
             setStatusMessage('Speech generated successfully!');
             console.log("Speech URL set to:", ttsData.url);
           } else {
@@ -255,7 +325,10 @@ export default function App() {
 
         {errorMessage && (
           <div className="error-message">
-            {errorMessage}
+            <div>{errorMessage}</div>
+            <button onClick={() => handleSubmit(new Event('submit') as any)}>
+              Retry
+            </button>
           </div>
         )}
       </form>
