@@ -417,44 +417,13 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
   }, []);
 
   // Find the matching emotion in the wheel structure
-  const [processingEmotion, setProcessingEmotion] = useState<string | null>(null);
-  const [identifiedEmotion, setIdentifiedEmotion] = useState<string | null>(null);
-
   useEffect(() => {
     // Reset animation stage when emotion changes
     setAnimationStage(0);
     setActivePrimary(null);
     setActiveSecondary(null);
     setActiveTertiary(null);
-    setIdentifiedEmotion(null);
-    
-    // When processing starts, set a sequence of emotions being checked
-    if (isProcessing) {
-      const emotionSequence = ["joy", "love", "anger", "sadness", "fear", "surprise"];
-      let currentIndex = 0;
-      
-      const interval = setInterval(() => {
-        const currentEmotion = emotionSequence[currentIndex];
-        setProcessingEmotion(currentEmotion);
-        
-        // Simulate emotion detection by randomly pausing on an emotion
-        if (Math.random() > 0.7 && !identifiedEmotion) {
-          setIdentifiedEmotion(currentEmotion);
-          setTimeout(() => {
-            setIdentifiedEmotion(null);
-          }, 1500);
-        }
-        
-        currentIndex = (currentIndex + 1) % emotionSequence.length;
-      }, 800);
-      
-      return () => {
-        clearInterval(interval);
-        setProcessingEmotion(null);
-        setIdentifiedEmotion(null);
-      };
-    }
-    
+
     if (!selectedEmotion) return;
 
     // Find the closest matching emotions
@@ -911,16 +880,6 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
         <div className="processing-overlay">
           <div className="processing-spinner"></div>
           <div className="processing-text">Analyzing emotional patterns...</div>
-          <div className="emotion-detection-status">
-            <span className="pulse-dot"></span>
-            <span>
-              {identifiedEmotion 
-                ? <span className="detected-emotion">IDENTIFIED: <strong>{identifiedEmotion}</strong></span>
-                : processingEmotion 
-                  ? `Analyzing: ${processingEmotion}` 
-                  : "Identifying primary emotion..."}
-            </span>
-          </div>
         </div>
       )}
     </div>
