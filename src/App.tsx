@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from 'react'
-import './App.css'
-import { checkEmotionApiHealth, testEmotionApi } from './utils'
-import EmotionWheel from './components/EmotionWheel'
+import { useState, useEffect, useRef } from "react";
+import "./App.css";
+import { checkEmotionApiHealth, testEmotionApi } from "./utils";
+import EmotionWheel from "./components/EmotionWheel";
 
 // Flag to indicate we're using mock APIs - set to false to attempt real API connection
 const USE_MOCK_API = false;
@@ -12,18 +12,24 @@ interface EmotionResponse {
 }
 
 export default function App() {
-  const [inputText, setInputText] = useState<string>('');
+  const [inputText, setInputText] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [selectedEmotion, setSelectedEmotion] = useState<string | null>(null);
   const [wheelRotation, setWheelRotation] = useState<number>(0);
   const [speechUrl, setSpeechUrl] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
-  const [statusMessage, setStatusMessage] = useState<string>('');
-  const [errorMessage, setErrorMessage] = useState<string>('');
-  const [processingStage, setProcessingStage] = useState<string>('');
-  const [apiStatus, setApiStatus] = useState<'unknown' | 'online' | 'offline'>('unknown');
-  const [lastApiTest, setLastApiTest] = useState<{ time: Date | null, result: any }>({ time: null, result: null });
+  const [statusMessage, setStatusMessage] = useState<string>("");
+  const [errorMessage, setErrorMessage] = useState<string>("");
+  const [processingStage, setProcessingStage] = useState<string>("");
+  const [apiStatus, setApiStatus] = useState<"unknown" | "online" | "offline">(
+    "unknown",
+  );
+  const [lastApiTest, setLastApiTest] = useState<{
+    time: Date | null;
+    result: any;
+  }>({ time: null, result: null });
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [emotionRes, setEmotionRes] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,114 +41,114 @@ export default function App() {
       setIsProcessing(true);
       setSelectedEmotion(null);
       setSpeechUrl(null);
-      setErrorMessage('');
-      setStatusMessage('Processing your request...');
-      setProcessingStage('initializing');
+      setErrorMessage("");
+      setStatusMessage("Processing your request...");
+      setProcessingStage("initializing");
 
       // Start the wheel spinning animation
       const spinInterval = setInterval(() => {
-        setWheelRotation(prev => (prev + 5) % 360);
+        setWheelRotation((prev) => (prev + 5) % 360);
       }, 50);
 
       // Extract emotions from text
-      setProcessingStage('emotion');
-      setStatusMessage('Checking API availability...');
+      setProcessingStage("emotion");
+      setStatusMessage("Checking API availability...");
 
       // Skip health checks and directly call the APIs
-      setStatusMessage('Analyzing text emotions...');
+      setStatusMessage("Analyzing text emotions...");
       console.log("Calling emotion API...");
 
       try {
         // Emotion Analysis API Call
-        setProcessingStage('emotion');
-        setStatusMessage('Analyzing text emotions...');
+        setProcessingStage("emotion");
+        setStatusMessage("Analyzing text emotions...");
         console.log("Calling emotion API...");
 
-        let emotionId = 'neutral';
+        let emotionId = "free";
 
         // Skip health check and directly call the API
         console.log("Skipping health check, making direct API call");
 
         try {
-          console.log("Sending to emotion API:", JSON.stringify({ query: inputText }));
-          console.log("Emotion API endpoint: https://emorag-arangodb-py-547962548252.us-central1.run.app/extract-emotions/qa");
+          console.log(
+            "Sending to emotion API:",
+            JSON.stringify({ query: inputText }),
+          );
+          console.log(
+            "Emotion API endpoint: https://emorag-arangodb-py-547962548252.us-central1.run.app/qa",
+          );
 
           // Use CORS proxy to avoid CORS issues
-          const proxyUrl = 'https://corsproxy.io/?';
-          const targetUrl = 'https://emorag-arangodb-py-547962548252.us-central1.run.app/extract-emotions/qa';
-          
+          // const proxyUrl = 'https://corsproxy.io/?';
+          const targetUrl =
+            "https://emorag-arangodb-py-547962548252.us-central1.run.app/qa";
+
           console.log("Using CORS proxy to connect to emotion API");
-          
+
           // Simplified robust request with better error logging
-          const emotionResponse = await fetch(proxyUrl + encodeURIComponent(targetUrl), {
-            method: 'POST',
-            headers: { 
-              'Content-Type': 'application/json',
-              'Accept': 'application/json, text/plain, */*',
-              'Origin': window.location.origin
+          const emotionResponse = await fetch(targetUrl, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
             },
             body: JSON.stringify({ query: inputText }),
-            mode: 'cors',
-            // Adding timeout to prevent long-hanging requests
-            signal: AbortSignal.timeout(30000)
-          }).catch(error => {
+          }).catch((error) => {
             console.error("Fetch error details:", error);
-            throw new Error("Network error connecting to emotion API. Server may be offline.");
+            throw new Error(
+              "Network error connecting to emotion API. Server may be offline.",
+            );
           });
 
           console.log("API response status:", emotionResponse.status);
 
           if (!emotionResponse.ok) {
-            const errorText = await emotionResponse.text().catch(() => "No error details available");
-            console.error("Emotion API Error Response:", emotionResponse.status, errorText);
-            throw new Error(`Emotion API returned status ${emotionResponse.status}: ${errorText}`);
+            const errorText = await emotionResponse
+              .text()
+              .catch(() => "No error details available");
+            console.error(
+              "Emotion API Error Response:",
+              emotionResponse.status,
+              errorText,
+            );
+            throw new Error(
+              `Emotion API returned status ${emotionResponse.status}: ${errorText}`,
+            );
           }
 
           // Try to get the response as JSON first
-          let emotionData;
-          try {
-            emotionData = await emotionResponse.json();
-            console.log("Emotion API JSON response:", emotionData);
-          } catch (jsonError) {
-            // If JSON parsing fails, get as text
-            emotionData = await emotionResponse.text();
-            console.log("Emotion API text response:", emotionData);
-          }
-
+          let emotionData = await emotionResponse.text();
+          setEmotionRes(emotionData);
           // Based on the format you provided:
           // const id = res.data.splite(":")[1].trim().toLowerCase()
           // Example: Summary: abaondoned
 
-          let parsedEmotion = 'neutral';
+          let parsedEmotion = "free";
 
           // Check if response is an object with data property
-          if (typeof emotionData === 'object' && emotionData.data) {
+          debugger;
+          if (emotionData) {
             console.log("Using object data format");
-            const dataStr = emotionData.data.toString();
+            const dataStr = emotionData.toString();
             // Handle the typo in "splite" - use split instead
-            if (dataStr.includes(':')) {
-              parsedEmotion = dataStr.split(':')[1]?.trim().toLowerCase() || 'neutral';
+            if (dataStr.includes(":")) {
+              parsedEmotion =
+                dataStr.split(":")[1]?.trim().toLowerCase() || "neutral";
+              if (parsedEmotion.includes(",")) {
+                parsedEmotion = parsedEmotion.split(",")[0].trim();
+              }
+            } else if (!dataStr.includes(" ")) {
+              parsedEmotion = dataStr.trim().toLowerCase();
             }
-          } 
-          // If it's text and contains "Summary:"
-          else if (typeof emotionData === 'string' && emotionData.includes('Summary:')) {
-            console.log("Using Summary: format");
-            parsedEmotion = emotionData.split('Summary:')[1]?.trim().toLowerCase() || 'neutral';
-          } 
-          // If it's just text with a colon
-          else if (typeof emotionData === 'string' && emotionData.includes(':')) {
-            console.log("Using basic colon format");
-            parsedEmotion = emotionData.split(':')[1]?.trim().toLowerCase() || 'neutral';
           }
 
           console.log("Parsed emotion:", parsedEmotion);
 
           // Make sure we have a valid emotion ID by removing any extra spaces or unexpected characters
-          emotionId = parsedEmotion.replace(/[^a-z]/g, '');
+          emotionId = parsedEmotion;
 
           // If emotion ended up empty, use neutral
           if (!emotionId) {
-            emotionId = 'neutral';
+            emotionId = "free";
           }
 
           console.log("Final extracted emotion ID:", emotionId);
@@ -172,7 +178,7 @@ export default function App() {
           fearful: 180,
           angry: 225,
           disgusted: 315,
-          
+
           // Secondary emotions - Happy family
           optimistic: 0,
           trusting: 0,
@@ -182,49 +188,49 @@ export default function App() {
           interested: 0,
           accepted: 0,
           peaceful: 0,
-          
+
           // Secondary emotions - Surprised family
           amazed: 45,
           confused: 45,
           excited: 45,
           startled: 45,
-          
+
           // Secondary emotions - Sad family
           lonely: 90,
           vulnerable: 90,
           guilty: 90,
           depressed: 90,
           hurt: 90,
-          
+
           // Secondary emotions - Bad family
           bored: 135,
           busy: 135,
           stressed: 135,
           tired: 135,
-          
+
           // Secondary emotions - Fearful family
           scared: 180,
           anxious: 180,
           weak: 180,
           rejected: 180,
           threatened: 180,
-          
+
           // Secondary emotions - Angry family
-          'let down': 225,
+          "let down": 225,
           humiliated: 225,
           bitter: 225,
           mad: 225,
           aggressive: 225,
           frustrated: 225,
           distant: 225,
-          
+
           // Secondary emotions - Disgusted family
           critical: 315,
           disapproving: 315,
           disappointed: 315,
           awful: 315,
           repelled: 315,
-          
+
           // Tertiary emotions - mapped to their primary emotion
           // Happy tertiary
           inspired: 0,
@@ -243,7 +249,7 @@ export default function App() {
           valued: 0,
           thankful: 0,
           loving: 0,
-          
+
           // Surprised tertiary
           awed: 45,
           astonished: 45,
@@ -253,7 +259,7 @@ export default function App() {
           enthusiastic: 45,
           shocked: 45,
           dismayed: 45,
-          
+
           // Sad tertiary
           abandoned: 90,
           victimized: 90,
@@ -265,17 +271,17 @@ export default function App() {
           inferior: 90,
           disappointed: 90,
           embarrassed: 90,
-          
+
           // Bad tertiary
           indifferent: 135,
           apathetic: 135,
           rushed: 135,
           pressured: 135,
           overwhelmed: 135,
-          'out of control': 135,
+          "out of control": 135,
           sleepy: 135,
           unfocused: 135,
-          
+
           // Fearful tertiary
           helpless: 180,
           frightened: 180,
@@ -286,7 +292,7 @@ export default function App() {
           inadequate: 180,
           nervous: 180,
           exposed: 180,
-          
+
           // Angry tertiary
           betrayed: 225,
           resentful: 225,
@@ -302,7 +308,7 @@ export default function App() {
           annoyed: 225,
           withdrawn: 225,
           numb: 225,
-          
+
           // Disgusted tertiary
           skeptical: 315,
           dismissive: 315,
@@ -313,10 +319,10 @@ export default function App() {
           detestable: 315,
           horrified: 315,
           hesitant: 315,
-          
+
           // Neutral
           neutral: 225,
-          
+
           // Common misspellings and alternate forms
           joyful: 0,
           joy: 0,
@@ -324,71 +330,89 @@ export default function App() {
           sadness: 90,
           anger: 225,
           disgust: 315,
-          fear: 180
+          fear: 180,
         };
 
         // Set the wheel to the emotion position or a balanced position if not mapped
-        const wheelPosition = emotionPositions[emotionId.toLowerCase()] !== undefined 
-          ? emotionPositions[emotionId.toLowerCase()] 
-          : 225; // Default to a neutral-ish position
-        
+        const wheelPosition =
+          emotionPositions[emotionId.toLowerCase()] !== undefined
+            ? emotionPositions[emotionId.toLowerCase()]
+            : 225; // Default to a neutral-ish position
+
         setWheelRotation(wheelPosition);
 
         // Check if TTS API is available before attempting to generate speech
-          try {
-            // Use mock TTS API instead of real one
-            import('./mockApi').then(async ({ mockSpeechSynthesis }) => {
-              // Generate TTS with the emotion
-              setProcessingStage('speech');
-              setStatusMessage('Generating emotional speech...');
-              console.log("Calling TTS API (mock)...");
+        try {
+          // Generate TTS with the emotion
+          setProcessingStage("speech");
+          setStatusMessage("Generating emotional speech...");
+          console.log("Calling TTS API (mock)...");
 
-              try {
-                // Use mock speech synthesis
-                const speechUrl = await mockSpeechSynthesis(inputText);
-                console.log("Mock TTS response:", speechUrl);
-                
-                if (speechUrl) {
-                  setSpeechUrl(speechUrl);
-                  console.log("Speech URL successfully set to:", speechUrl);
-                  setStatusMessage('Speech generated successfully!');
-                } else {
-                  throw new Error("No URL returned from TTS API");
-                }
-              } catch (ttsApiError: any) {
-                console.error("TTS API Error:", ttsApiError);
-                setStatusMessage(`Speech generation completed with emotion: ${emotionId}. Speech generation failed: (${ttsApiError.message})`);
-                // Don't throw the error - we can still show the emotion even if TTS fails
-              }
-            }).catch(importError => {
-              console.error("Error importing mock API:", importError);
-              setStatusMessage(`Emotion detected: ${emotionId}. TTS API is currently unavailable.`);
+          try {
+            const emotionUrl = `https://storage.googleapis.com/ava_emotions/source/${emotionId}.wav`;
+            console.log({ emotionUrl });
+            // Use mock speech synthesis
+            const speechRes = await fetch(
+              "https://tts-twitter-agent-547962548252.us-central1.run.app/llasa-voice-synthesizer",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  text: inputText,
+                  audio_url: emotionUrl,
+                }),
+              },
+            ).catch((error) => {
+              console.error("Fetch error details:", error);
+              throw new Error(
+                "Network error connecting to emotion API. Server may be offline.",
+              );
             });
-          } catch (ttsCheckError) {
-            console.error("TTS API check failed:", ttsCheckError);
-            setStatusMessage(`Emotion detected: ${emotionId}. TTS API is currently unavailable.`);
+            if (speechRes) {
+              const speechData = await speechRes.json();
+              setSpeechUrl(speechData.url);
+              console.log("Speech URL successfully set to:", speechUrl);
+              setStatusMessage("Speech generated successfully!");
+            } else {
+              throw new Error("No URL returned from TTS API");
+            }
+          } catch (ttsApiError: any) {
+            console.error("TTS API Error:", ttsApiError);
+            setStatusMessage(
+              `Speech generation completed with emotion: ${emotionId}. Speech generation failed: (${ttsApiError.message})`,
+            );
+            // Don't throw the error - we can still show the emotion even if TTS fails
           }
+        } catch (ttsCheckError) {
+          console.error("TTS API check failed:", ttsCheckError);
+          setStatusMessage(
+            `Emotion detected: ${emotionId}. TTS API is currently unavailable.`,
+          );
+        }
       } catch (apiError: any) {
         clearInterval(spinInterval);
         throw apiError;
       }
-
     } catch (error: any) {
-      console.error('Error processing request:', error);
+      console.error("Error processing request:", error);
 
       // Determine a more user-friendly error message based on the error type
-      let userErrorMessage = 'Something went wrong';
+      let userErrorMessage = "Something went wrong";
 
-      if (error instanceof TypeError && error.message.includes('fetch')) {
-        userErrorMessage = 'Network error: Could not connect to the API server. Please check your internet connection and try again.';
-      } else if (error.name === 'AbortError') {
-        userErrorMessage = 'Request timeout: The API server took too long to respond. Please try again later.';
+      if (error instanceof TypeError && error.message.includes("fetch")) {
+        userErrorMessage =
+          "Network error: Could not connect to the API server. Please check your internet connection and try again.";
+      } else if (error.name === "AbortError") {
+        userErrorMessage =
+          "Request timeout: The API server took too long to respond. Please try again later.";
       } else if (error.message) {
         userErrorMessage = error.message;
       }
 
       setErrorMessage(`Error: ${userErrorMessage}`);
-      setStatusMessage('Failed to process request');
+      setStatusMessage("Failed to process request");
 
       // Reset emotion display when APIs fail
       setSelectedEmotion(null);
@@ -396,13 +420,13 @@ export default function App() {
       setWheelRotation(0);
     } finally {
       setIsProcessing(false);
-      setProcessingStage('complete');
+      setProcessingStage("complete");
     }
   };
 
   const playAudio = () => {
     if (audioRef.current && speechUrl) {
-      setStatusMessage('Playing audio...');
+      setStatusMessage("Playing audio...");
 
       const playPromise = audioRef.current.play();
 
@@ -411,7 +435,7 @@ export default function App() {
           .then(() => {
             setIsPlaying(true);
           })
-          .catch(error => {
+          .catch((error) => {
             console.error("Audio playback error:", error);
             setErrorMessage(`Audio playback failed: ${error.message}`);
             setIsPlaying(false);
@@ -430,26 +454,26 @@ export default function App() {
 
   // Generate particles on component mount
   useEffect(() => {
-    const particlesContainer = document.querySelector('.particles');
+    const particlesContainer = document.querySelector(".particles");
     if (particlesContainer) {
       // Clear existing particles
-      particlesContainer.innerHTML = '';
-      
+      particlesContainer.innerHTML = "";
+
       // Create particles
       for (let i = 0; i < 30; i++) {
-        const particle = document.createElement('div');
-        particle.classList.add('particle');
-        
+        const particle = document.createElement("div");
+        particle.classList.add("particle");
+
         // Random positioning
         const posX = Math.random() * 100;
         const delay = Math.random() * 15;
         const size = 1 + Math.random() * 2;
-        
+
         particle.style.left = `${posX}%`;
         particle.style.animationDelay = `${delay}s`;
         particle.style.width = `${size}px`;
         particle.style.height = `${size}px`;
-        
+
         particlesContainer.appendChild(particle);
       }
     }
@@ -459,27 +483,47 @@ export default function App() {
     <main className="app-container">
       {/* Particle system */}
       <div className="particles"></div>
-      
+
       {/* Enhanced scanline effect */}
       <div className="scanline"></div>
-      
-      <h1 className="app-title">NEURO<span>SYNC</span> 3.0</h1>
-      <h2 style={{fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '2px', marginTop: '-0.5rem', marginBottom: '1.5rem', opacity: 0.8, textAlign: 'center', fontFamily: "'Space Mono', monospace"}}>
+
+      <h1 className="app-title">
+        NEURO<span>SYNC</span> 3.0
+      </h1>
+      <h2
+        style={{
+          fontSize: "0.9rem",
+          textTransform: "uppercase",
+          letterSpacing: "2px",
+          marginTop: "-0.5rem",
+          marginBottom: "1.5rem",
+          opacity: 0.8,
+          textAlign: "center",
+          fontFamily: "'Space Mono', monospace",
+        }}
+      >
         Advanced Emotion Recognition System
       </h2>
 
       <div className="api-status">
         <div className={`indicator ${apiStatus}`}></div>
         <span>
-          {USE_MOCK_API ? '[SIMULATION ACTIVE] ' : '[LIVE CONNECTION] '}
-          EMOTION ENGINE: {apiStatus === 'online' ? (USE_MOCK_API ? 'VIRTUAL MODE' : 'ONLINE') : apiStatus === 'offline' ? 'OFFLINE' : 'INITIALIZING...'}
+          {USE_MOCK_API ? "[SIMULATION ACTIVE] " : "[LIVE CONNECTION] "}
+          EMOTION ENGINE:{" "}
+          {apiStatus === "online"
+            ? USE_MOCK_API
+              ? "VIRTUAL MODE"
+              : "ONLINE"
+            : apiStatus === "offline"
+              ? "OFFLINE"
+              : "INITIALIZING..."}
         </span>
       </div>
 
-      <EmotionWheel 
-        selectedEmotion={selectedEmotion} 
+      <EmotionWheel
+        selectedEmotion={selectedEmotion}
         wheelRotation={wheelRotation}
-        isProcessing={isProcessing} 
+        isProcessing={isProcessing}
       />
 
       <form onSubmit={handleSubmit} className="input-form">
@@ -494,80 +538,105 @@ export default function App() {
 
         <div className="test-options">
           <span>Quick Test Queries: </span>
-          <span className="test-query" onClick={() => setInputText("I'm in the town, lets roam around")}>
+          <span
+            className="test-query"
+            onClick={() => setInputText("I'm in the town, lets roam around")}
+          >
             "I'm in the town, lets roam around"
           </span>
-          <span className="test-query" onClick={() => setInputText("I feel so happy today")}>
+          <span
+            className="test-query"
+            onClick={() => setInputText("I feel so happy today")}
+          >
             "I feel so happy today"
           </span>
-          <span className="test-query" onClick={() => setInputText("I am very sad and lonely")}>
+          <span
+            className="test-query"
+            onClick={() => setInputText("I am very sad and lonely")}
+          >
             "I am very sad and lonely"
           </span>
         </div>
         <div className="button-group">
-          <button 
-            type="submit" 
-            disabled={isProcessing || !inputText.trim()} 
+          <button
+            type="submit"
+            disabled={isProcessing || !inputText.trim()}
             className="submit-button"
           >
-            {isProcessing ? `Processing (${processingStage})...` : 'Generate Speech'}
+            {isProcessing
+              ? `Processing (${processingStage})...`
+              : "Generate Speech"}
           </button>
-          <button 
+          <button
             type="button"
             className="api-status-button"
             onClick={async () => {
               try {
-                setStatusMessage('Checking API connection...');
-                setErrorMessage('');
+                setStatusMessage("Checking API connection...");
+                setErrorMessage("");
 
                 console.log("API DIAGNOSTICS START -----");
                 console.log("Current time:", new Date().toISOString());
-                
+
                 if (USE_MOCK_API) {
                   // If using mock API, simply check if the mock API module can be imported
                   try {
-                    const { mockApiHealth } = await import('./mockApi');
+                    const { mockApiHealth } = await import("./mockApi");
                     const isOnline = await mockApiHealth();
-                    
+
                     console.log("Mock API health check result:", isOnline);
                     console.log("API DIAGNOSTICS END -----");
-                    
-                    setApiStatus('online');
-                    setStatusMessage('Mock API is active and working correctly.');
+
+                    setApiStatus("online");
+                    setStatusMessage(
+                      "Mock API is active and working correctly.",
+                    );
                   } catch (mockError) {
                     console.error("Mock API import error:", mockError);
-                    setApiStatus('offline');
-                    setStatusMessage('Mock API module could not be loaded.');
-                    setErrorMessage(`Mock API error: ${mockError instanceof Error ? mockError.message : 'Unknown error'}`);
+                    setApiStatus("offline");
+                    setStatusMessage("Mock API module could not be loaded.");
+                    setErrorMessage(
+                      `Mock API error: ${mockError instanceof Error ? mockError.message : "Unknown error"}`,
+                    );
                   }
                 } else {
                   // Try a direct fetch with detailed logging
                   try {
                     console.log("Making direct API test call...");
                     // Use CORS proxy for direct API test
-                    const proxyUrl = 'https://corsproxy.io/?';
-                    const targetUrl = 'https://emorag-arangodb-py-547962548252.us-central1.run.app/extract-emotions/qa';
-                    
+                    const proxyUrl = "https://corsproxy.io/?";
+                    const targetUrl =
+                      "https://emorag-arangodb-py-547962548252.us-central1.run.app/extract-emotions/qa";
+
                     console.log("Using CORS proxy for direct API test");
-                    
-                    const directResponse = await fetch(proxyUrl + encodeURIComponent(targetUrl), {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json, text/plain, */*',
-                        'Origin': window.location.origin
+
+                    const directResponse = await fetch(
+                      proxyUrl + encodeURIComponent(targetUrl),
+                      {
+                        method: "POST",
+                        headers: {
+                          "Content-Type": "application/json",
+                          Accept: "application/json, text/plain, */*",
+                          Origin: window.location.origin,
+                        },
+                        body: JSON.stringify({ query: "Test message from UI" }),
+                        mode: "cors",
+                        cache: "no-cache",
+                        signal: AbortSignal.timeout(15000),
                       },
-                      body: JSON.stringify({ query: "Test message from UI" }),
-                      mode: 'cors',
-                      cache: 'no-cache',
-                      signal: AbortSignal.timeout(15000)
-                    }).catch(e => {
+                    ).catch((e) => {
                       console.error("Direct fetch error:", e);
                       throw e;
                     });
 
-                    console.log("Direct API response status:", directResponse.status);
-                    console.log("Direct API response headers:", Object.fromEntries([...directResponse.headers]));
+                    console.log(
+                      "Direct API response status:",
+                      directResponse.status,
+                    );
+                    console.log(
+                      "Direct API response headers:",
+                      Object.fromEntries([...directResponse.headers]),
+                    );
 
                     const responseText = await directResponse.text();
                     console.log("Direct API response text:", responseText);
@@ -576,13 +645,17 @@ export default function App() {
                     const isOnline = await checkEmotionApiHealth();
                     console.log("API DIAGNOSTICS END -----");
 
-                    setApiStatus(isOnline ? 'online' : 'offline');
-                    setStatusMessage(isOnline ? 
-                      'API connection successful! The emotion API is online.' : 
-                      'API connection failed. The emotion API appears to be offline. See console for details.');
+                    setApiStatus(isOnline ? "online" : "offline");
+                    setStatusMessage(
+                      isOnline
+                        ? "API connection successful! The emotion API is online."
+                        : "API connection failed. The emotion API appears to be offline. See console for details.",
+                    );
 
                     if (!isOnline) {
-                      setErrorMessage('API server appears to be offline. Please check browser console for diagnostic information.');
+                      setErrorMessage(
+                        "API server appears to be offline. Please check browser console for diagnostic information.",
+                      );
                     }
                   } catch (directError: any) {
                     console.error("Direct API test failed:", directError);
@@ -591,111 +664,121 @@ export default function App() {
                 }
               } catch (error: any) {
                 console.error("API Connection Error:", error);
-                setApiStatus('offline');
-                setStatusMessage('API connection check failed');
-                setErrorMessage(`API Connection Error: ${error.message}. See console for details.`);
+                setApiStatus("offline");
+                setStatusMessage("API connection check failed");
+                setErrorMessage(
+                  `API Connection Error: ${error.message}. See console for details.`,
+                );
               }
             }}
           >
             Check API Status
           </button>
-          <button 
-            type="button" 
-            disabled={isProcessing || !inputText.trim()} 
+          <button
+            type="button"
+            disabled={isProcessing || !inputText.trim()}
             className="test-button"
             onClick={async () => {
               try {
                 setIsProcessing(true);
-                setStatusMessage('Testing emotion API...');
-                setErrorMessage('');
+                setStatusMessage("Testing emotion API...");
+                setErrorMessage("");
 
                 console.log("Testing emotion API with:", inputText);
-                
+
                 // Use mock API directly since the real API is not responding
-                import('./mockApi').then(async ({ mockEmotionAnalysis }) => {
-                  try {
-                    // Get emotion from mock analysis
-                    const emotion = mockEmotionAnalysis(inputText);
-                    console.log("Mock emotion analysis result:", emotion);
-                    
-                    setApiStatus('online');
-                    setSelectedEmotion(emotion);
-                    setStatusMessage(`Emotion API test successful! Emotion: ${emotion}`);
-                    
-                    // More comprehensive mapping of emotions to wheel positions
-                    const emotionPositions: Record<string, number> = {
-                      // Primary emotions
-                      joy: 0,
-                      love: 60, 
-                      anger: 120,
-                      sadness: 180,
-                      fear: 240,
-                      surprise: 300,
-                      
-                      // Secondary emotions - joy family
-                      happy: 0,
-                      happiness: 0,
-                      serenity: 0,
-                      ecstasy: 0,
-                      cheerful: 0,
-                      
-                      // Secondary emotions - love family
-                      affection: 60,
-                      romance: 60,
-                      compassion: 60,
-                      
-                      // Secondary emotions - anger family
-                      angry: 120,
-                      annoyance: 120,
-                      rage: 120,
-                      disgust: 120,
-                      disgusted: 120,
-                      
-                      // Secondary emotions - sadness family
-                      sad: 180,
-                      disappointment: 180,
-                      grief: 180,
-                      loneliness: 180,
-                      depressed: 180,
-                      
-                      // Secondary emotions - fear family
-                      fearful: 240,
-                      anxiety: 240,
-                      terror: 240,
-                      insecurity: 240,
-                      worried: 240,
-                      
-                      // Secondary emotions - surprise family
-                      surprised: 300,
-                      amazement: 300,
-                      shock: 300,
-                      distraction: 300,
-                      astonished: 300,
-                      
-                      // Neutral
-                      neutral: 225,
-                    };
-                    
-                    setWheelRotation(emotionPositions[emotion] || 225);
-                  } catch (error: any) {
-                    console.error("Mock emotion analysis error:", error);
-                    setErrorMessage(`Emotion API Test Error: ${error.message}`);
-                    setStatusMessage('Emotion API test failed');
-                    setSelectedEmotion(null);
-                    setWheelRotation(0);
-                  } finally {
+                import("./mockApi")
+                  .then(async ({ mockEmotionAnalysis }) => {
+                    try {
+                      // Get emotion from mock analysis
+                      const emotion = mockEmotionAnalysis(inputText);
+                      console.log("Mock emotion analysis result:", emotion);
+
+                      setApiStatus("online");
+                      setSelectedEmotion(emotion);
+                      setStatusMessage(
+                        `Emotion API test successful! Emotion: ${emotion}`,
+                      );
+
+                      // More comprehensive mapping of emotions to wheel positions
+                      const emotionPositions: Record<string, number> = {
+                        // Primary emotions
+                        joy: 0,
+                        love: 60,
+                        anger: 120,
+                        sadness: 180,
+                        fear: 240,
+                        surprise: 300,
+
+                        // Secondary emotions - joy family
+                        happy: 0,
+                        happiness: 0,
+                        serenity: 0,
+                        ecstasy: 0,
+                        cheerful: 0,
+
+                        // Secondary emotions - love family
+                        affection: 60,
+                        romance: 60,
+                        compassion: 60,
+
+                        // Secondary emotions - anger family
+                        angry: 120,
+                        annoyance: 120,
+                        rage: 120,
+                        disgust: 120,
+                        disgusted: 120,
+
+                        // Secondary emotions - sadness family
+                        sad: 180,
+                        disappointment: 180,
+                        grief: 180,
+                        loneliness: 180,
+                        depressed: 180,
+
+                        // Secondary emotions - fear family
+                        fearful: 240,
+                        anxiety: 240,
+                        terror: 240,
+                        insecurity: 240,
+                        worried: 240,
+
+                        // Secondary emotions - surprise family
+                        surprised: 300,
+                        amazement: 300,
+                        shock: 300,
+                        distraction: 300,
+                        astonished: 300,
+
+                        // Neutral
+                        neutral: 225,
+                      };
+
+                      setWheelRotation(emotionPositions[emotion] || 225);
+                    } catch (error: any) {
+                      console.error("Mock emotion analysis error:", error);
+                      setErrorMessage(
+                        `Emotion API Test Error: ${error.message}`,
+                      );
+                      setStatusMessage("Emotion API test failed");
+                      setSelectedEmotion(null);
+                      setWheelRotation(0);
+                    } finally {
+                      setIsProcessing(false);
+                    }
+                  })
+                  .catch((importError) => {
+                    console.error("Error importing mock API:", importError);
+                    setErrorMessage(
+                      `Failed to import mock API: ${importError.message}`,
+                    );
+                    setStatusMessage("Emotion API test failed");
                     setIsProcessing(false);
-                  }
-                }).catch(importError => {
-                  console.error("Error importing mock API:", importError);
-                  setErrorMessage(`Failed to import mock API: ${importError.message}`);
-                  setStatusMessage('Emotion API test failed');
-                  setIsProcessing(false);
-                });
+                  });
               } catch (error: any) {
                 console.error("Emotion API Test Error:", error);
                 setErrorMessage(`Emotion API Test Error: ${error.message}`);
-                setStatusMessage('Emotion API test failed');
+                setStatusMessage("Emotion API test failed");
                 setSelectedEmotion(null);
                 setWheelRotation(0);
                 setIsProcessing(false);
@@ -709,7 +792,9 @@ export default function App() {
         {statusMessage && (
           <div className="status-message">
             {isProcessing && <div className="testing-indicator"></div>}
-            <div className={`status-indicator ${isProcessing ? 'active' : ''}`}></div>
+            <div
+              className={`status-indicator ${isProcessing ? "active" : ""}`}
+            ></div>
             {statusMessage}
           </div>
         )}
@@ -717,7 +802,7 @@ export default function App() {
         {errorMessage && (
           <div className="error-message">
             <div>{errorMessage}</div>
-            <button onClick={() => handleSubmit(new Event('submit') as any)}>
+            <button onClick={() => handleSubmit(new Event("submit") as any)}>
               Retry
             </button>
           </div>
@@ -728,12 +813,14 @@ export default function App() {
         <div className="audio-player">
           <div className="audio-status">
             Audio generated successfully!
-            <span className={`audio-indicator ${isPlaying ? 'playing' : ''}`}></span>
+            <span
+              className={`audio-indicator ${isPlaying ? "playing" : ""}`}
+            ></span>
           </div>
-          <audio 
-            ref={audioRef} 
-            src={speechUrl} 
-            controls 
+          <audio
+            ref={audioRef}
+            src={speechUrl}
+            controls
             onEnded={() => setIsPlaying(false)}
             onPlay={() => setIsPlaying(true)}
             onPause={() => setIsPlaying(false)}
@@ -742,12 +829,12 @@ export default function App() {
               setErrorMessage("Failed to play audio. Please try again.");
             }}
           />
-          <button 
-            onClick={playAudio} 
-            disabled={isPlaying} 
+          <button
+            onClick={playAudio}
+            disabled={isPlaying}
             className="play-button"
           >
-            {isPlaying ? 'Playing...' : 'Play Again'}
+            {isPlaying ? "Playing..." : "Play Again"}
           </button>
           <div className="audio-url">
             <a href={speechUrl} target="_blank" rel="noopener noreferrer">
@@ -757,9 +844,11 @@ export default function App() {
         </div>
       )}
 
-      {selectedEmotion && (
+      {emotionRes && (
         <div className="result-container">
-          <h2>Selected Emotion: <span className="emotion-tag">{selectedEmotion}</span></h2>
+          <h2>
+            EmoRAG Response: <span className="emotion-tag">{emotionRes}</span>
+          </h2>
         </div>
       )}
 
@@ -773,65 +862,91 @@ export default function App() {
               className="debug-button"
               onClick={async () => {
                 try {
-                  setStatusMessage('Running manual API test...');
-                  setErrorMessage('');
+                  setStatusMessage("Running manual API test...");
+                  setErrorMessage("");
 
                   console.log("MANUAL API TEST START -----");
 
                   // Try a direct fetch with detailed logging
-                  const testPayload = { query: "I'm in the town, lets roam around" };
+                  const testPayload = {
+                    query: "I'm in the town, lets roam around",
+                  };
 
                   console.log("Test payload:", JSON.stringify(testPayload));
                   console.log("Sending manual test to API...");
 
                   // Use CORS proxy for manual API test
-                  const proxyUrl = 'https://corsproxy.io/?';
-                  const targetUrl = 'https://emorag-arangodb-py-547962548252.us-central1.run.app/extract-emotions/qa';
-                  
+                  const proxyUrl = "https://corsproxy.io/?";
+                  const targetUrl =
+                    "https://emorag-arangodb-py-547962548252.us-central1.run.app/extract-emotions/qa";
+
                   console.log("Using CORS proxy for manual API test");
-                  
-                  const testResponse = await fetch(proxyUrl + encodeURIComponent(targetUrl), {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      'Accept': 'application/json, text/plain, */*',
-                      'Origin': window.location.origin
+
+                  const testResponse = await fetch(
+                    proxyUrl + encodeURIComponent(targetUrl),
+                    {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                        Accept: "application/json, text/plain, */*",
+                        Origin: window.location.origin,
+                      },
+                      body: JSON.stringify(testPayload),
+                      mode: "cors",
+                      cache: "no-cache",
+                      credentials: "omit",
+                      redirect: "follow",
+                      signal: AbortSignal.timeout(20000),
                     },
-                    body: JSON.stringify(testPayload),
-                    mode: 'cors',
-                    cache: 'no-cache',
-                    credentials: 'omit',
-                    redirect: 'follow',
-                    signal: AbortSignal.timeout(20000)
-                  }).catch(e => {
+                  ).catch((e) => {
                     console.error("Manual test fetch error:", e);
                     throw e;
                   });
 
-                  console.log("Manual test response status:", testResponse.status);
-                  console.log("Manual test response headers:", Object.fromEntries([...testResponse.headers]));
+                  console.log(
+                    "Manual test response status:",
+                    testResponse.status,
+                  );
+                  console.log(
+                    "Manual test response headers:",
+                    Object.fromEntries([...testResponse.headers]),
+                  );
 
                   if (testResponse.ok) {
                     let responseContent;
                     try {
                       responseContent = await testResponse.json();
-                      console.log("Manual test response (JSON):", responseContent);
+                      console.log(
+                        "Manual test response (JSON):",
+                        responseContent,
+                      );
                     } catch (jsonError) {
                       responseContent = await testResponse.text();
-                      console.log("Manual test response (Text):", responseContent);
+                      console.log(
+                        "Manual test response (Text):",
+                        responseContent,
+                      );
                     }
 
-                    setStatusMessage(`Manual API test successful! Response received.`);
+                    setStatusMessage(
+                      `Manual API test successful! Response received.`,
+                    );
                     console.log("MANUAL API TEST END -----");
                   } else {
-                    const errorText = await testResponse.text().catch(() => "No error text available");
+                    const errorText = await testResponse
+                      .text()
+                      .catch(() => "No error text available");
                     console.error("Manual test error response:", errorText);
-                    throw new Error(`API returned status ${testResponse.status}: ${errorText}`);
+                    throw new Error(
+                      `API returned status ${testResponse.status}: ${errorText}`,
+                    );
                   }
                 } catch (error: any) {
                   console.error("Manual API test failed:", error);
                   setErrorMessage(`Manual API test failed: ${error.message}`);
-                  setStatusMessage('Manual API test failed. See console for details.');
+                  setStatusMessage(
+                    "Manual API test failed. See console for details.",
+                  );
                   console.log("MANUAL API TEST END (WITH ERROR) -----");
                 }
               }}
@@ -839,14 +954,25 @@ export default function App() {
               Run Manual API Test
             </button>
             <p className="debug-note">
-              Note: Open your browser's developer console (F12 or right-click and select "Inspect") to see detailed logs from the API tests.
+              Note: Open your browser's developer console (F12 or right-click
+              and select "Inspect") to see detailed logs from the API tests.
             </p>
             <h3>API Connection Status</h3>
-            <p>API endpoint: <code>https://emorag-arangodb-py-547962548252.us-central1.run.app/extract-emotions/qa</code></p>
-            <p>Current status: <span className={`api-status-indicator ${apiStatus}`}>{apiStatus}</span></p>
+            <p>
+              API endpoint:{" "}
+              <code>
+                https://emorag-arangodb-py-547962548252.us-central1.run.app/extract-emotions/qa
+              </code>
+            </p>
+            <p>
+              Current status:{" "}
+              <span className={`api-status-indicator ${apiStatus}`}>
+                {apiStatus}
+              </span>
+            </p>
           </div>
         </details>
       </div>
     </main>
-  )
+  );
 }
