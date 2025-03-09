@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import './EmotionWheel.css';
 
@@ -16,7 +17,6 @@ interface Tertiary {
 interface Secondary {
   name: string;
   color: string;
-  angle: number;
   tertiaryEmotions: Tertiary[];
 }
 
@@ -38,226 +38,357 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
   const [activeTertiary, setActiveTertiary] = useState<Tertiary | null>(null);
   const [animationStage, setAnimationStage] = useState<number>(0);
 
-  // Define the emotion wheel structure
+  // Define the emotion wheel structure based on the CSV
   const emotionWheel: Primary[] = [
     {
-      name: "joy",
+      name: "Happy",
       color: "#FFDE59",
       angle: 0,
       secondaryEmotions: [
         {
-          name: "serenity",
-          color: "#A0D6B4",
-          angle: 0,
+          name: "Optimistic",
+          color: "#FFF59D",
           tertiaryEmotions: [
-            { name: "contentment", color: "#B8E0D2" },
-            { name: "peaceful", color: "#8ED1BD" },
-            { name: "bliss", color: "#A0D6B4" }
+            { name: "Inspired", color: "#FFFDE7" },
+            { name: "Hopeful", color: "#FFF9C4" }
           ]
         },
         {
-          name: "happiness",
-          color: "#FFA500",
-          angle: 30,
+          name: "Trusting",
+          color: "#FFE082",
           tertiaryEmotions: [
-            { name: "cheerful", color: "#FFB84D" },
-            { name: "delighted", color: "#FFC266" },
-            { name: "amused", color: "#FFD699" }
+            { name: "Sensitive", color: "#FFECB3" },
+            { name: "Intimate", color: "#FFD54F" }
           ]
         },
         {
-          name: "ecstasy",
-          color: "#FF69B4",
-          angle: 60,
+          name: "Proud",
+          color: "#FFCA28",
           tertiaryEmotions: [
-            { name: "excited", color: "#FF99CC" },
-            { name: "elated", color: "#FF80BF" },
-            { name: "euphoric", color: "#FF69B4" }
+            { name: "Confident", color: "#FFD54F" },
+            { name: "Successful", color: "#FFC107" }
+          ]
+        },
+        {
+          name: "Content",
+          color: "#FFC107",
+          tertiaryEmotions: [
+            { name: "Free", color: "#FFCA28" },
+            { name: "Joyful", color: "#FFB300" }
+          ]
+        },
+        {
+          name: "Playful",
+          color: "#FFB300",
+          tertiaryEmotions: [
+            { name: "Cheeky", color: "#FFA000" },
+            { name: "Aroused", color: "#FF8F00" }
+          ]
+        },
+        {
+          name: "Interested",
+          color: "#FF8F00",
+          tertiaryEmotions: [
+            { name: "Curious", color: "#FF9800" },
+            { name: "Inquisitive", color: "#F57C00" }
+          ]
+        },
+        {
+          name: "Accepted",
+          color: "#FF9800",
+          tertiaryEmotions: [
+            { name: "Respected", color: "#FFA726" },
+            { name: "Valued", color: "#FB8C00" }
+          ]
+        },
+        {
+          name: "Peaceful",
+          color: "#FB8C00",
+          tertiaryEmotions: [
+            { name: "Thankful", color: "#FF9800" },
+            { name: "Loving", color: "#F57C00" }
           ]
         }
       ]
     },
     {
-      name: "love",
-      color: "#FF5E78",
-      angle: 60,
+      name: "Surprised",
+      color: "#9C27B0",
+      angle: 45,
       secondaryEmotions: [
         {
-          name: "affection",
-          color: "#FF8FA3",
-          angle: 60,
+          name: "Amazed",
+          color: "#BA68C8",
           tertiaryEmotions: [
-            { name: "fondness", color: "#FFAAB9" },
-            { name: "liking", color: "#FF97A8" },
-            { name: "caring", color: "#FF8FA3" }
+            { name: "Awed", color: "#CE93D8" },
+            { name: "Astonished", color: "#AB47BC" }
           ]
         },
         {
-          name: "romance",
-          color: "#FF4D6D",
-          angle: 90,
+          name: "Confused",
+          color: "#8E24AA",
           tertiaryEmotions: [
-            { name: "attraction", color: "#FF6B84" },
-            { name: "passion", color: "#FF5E78" },
-            { name: "infatuation", color: "#FF4D6D" }
+            { name: "Eager", color: "#AB47BC" },
+            { name: "Energetic", color: "#7B1FA2" }
           ]
         },
         {
-          name: "compassion",
-          color: "#FB6F92",
-          angle: 120,
+          name: "Excited",
+          color: "#7B1FA2",
           tertiaryEmotions: [
-            { name: "empathy", color: "#FCA5BC" },
-            { name: "sympathy", color: "#FB8DAB" },
-            { name: "kindness", color: "#FB6F92" }
+            { name: "Overjoyed", color: "#9C27B0" },
+            { name: "Enthusiastic", color: "#6A1B9A" }
+          ]
+        },
+        {
+          name: "Startled",
+          color: "#6A1B9A",
+          tertiaryEmotions: [
+            { name: "Shocked", color: "#8E24AA" },
+            { name: "Dismayed", color: "#4A148C" }
           ]
         }
       ]
     },
     {
-      name: "anger",
-      color: "#E63946",
-      angle: 120,
+      name: "Sad",
+      color: "#5E35B1",
+      angle: 90,
       secondaryEmotions: [
         {
-          name: "annoyance",
-          color: "#F28482",
-          angle: 120,
+          name: "Lonely",
+          color: "#9575CD",
           tertiaryEmotions: [
-            { name: "irritation", color: "#F7AEA2" },
-            { name: "agitation", color: "#F5918E" },
-            { name: "frustration", color: "#F28482" }
+            { name: "Abandoned", color: "#B39DDB" },
+            { name: "Victimized", color: "#7E57C2" }
           ]
         },
         {
-          name: "rage",
-          color: "#D00000",
-          angle: 150,
+          name: "Vulnerable",
+          color: "#7E57C2",
           tertiaryEmotions: [
-            { name: "hostility", color: "#E63946" },
-            { name: "fury", color: "#DC1C13" },
-            { name: "hatred", color: "#D00000" }
+            { name: "Fragile", color: "#9575CD" },
+            { name: "Grief", color: "#673AB7" }
           ]
         },
         {
-          name: "disgust",
-          color: "#9D0208",
-          angle: 180,
+          name: "Guilty",
+          color: "#673AB7",
           tertiaryEmotions: [
-            { name: "aversion", color: "#BF0603" },
-            { name: "revulsion", color: "#A71D31" },
-            { name: "loathing", color: "#9D0208" }
+            { name: "Ashamed", color: "#7E57C2" },
+            { name: "Remorseful", color: "#5E35B1" }
+          ]
+        },
+        {
+          name: "Depressed",
+          color: "#5E35B1",
+          tertiaryEmotions: [
+            { name: "Empty", color: "#673AB7" },
+            { name: "Inferior", color: "#512DA8" }
+          ]
+        },
+        {
+          name: "Hurt",
+          color: "#512DA8",
+          tertiaryEmotions: [
+            { name: "Disappointed", color: "#673AB7" },
+            { name: "Embarrassed", color: "#4527A0" }
           ]
         }
       ]
     },
     {
-      name: "sadness",
-      color: "#457B9D",
+      name: "Bad",
+      color: "#3949AB",
+      angle: 135,
+      secondaryEmotions: [
+        {
+          name: "Bored",
+          color: "#7986CB",
+          tertiaryEmotions: [
+            { name: "Indifferent", color: "#9FA8DA" },
+            { name: "Apathetic", color: "#5C6BC0" }
+          ]
+        },
+        {
+          name: "Busy",
+          color: "#5C6BC0",
+          tertiaryEmotions: [
+            { name: "Rushed", color: "#7986CB" },
+            { name: "Pressured", color: "#3F51B5" }
+          ]
+        },
+        {
+          name: "Stressed",
+          color: "#3F51B5",
+          tertiaryEmotions: [
+            { name: "Overwhelmed", color: "#5C6BC0" },
+            { name: "Out of control", color: "#3949AB" }
+          ]
+        },
+        {
+          name: "Tired",
+          color: "#3949AB",
+          tertiaryEmotions: [
+            { name: "Sleepy", color: "#3F51B5" },
+            { name: "Unfocused", color: "#303F9F" }
+          ]
+        }
+      ]
+    },
+    {
+      name: "Fearful",
+      color: "#1E88E5",
       angle: 180,
       secondaryEmotions: [
         {
-          name: "disappointment",
-          color: "#6D97A9",
-          angle: 180,
+          name: "Scared",
+          color: "#64B5F6",
           tertiaryEmotions: [
-            { name: "dismay", color: "#8FB3C9" },
-            { name: "regret", color: "#7DA3B9" },
-            { name: "letdown", color: "#6D97A9" }
+            { name: "Helpless", color: "#90CAF9" },
+            { name: "Frightened", color: "#42A5F5" }
           ]
         },
         {
-          name: "grief",
-          color: "#1D3557",
-          angle: 210,
+          name: "Anxious",
+          color: "#42A5F5",
           tertiaryEmotions: [
-            { name: "heartbroken", color: "#2A4A73" },
-            { name: "anguish", color: "#284066" },
-            { name: "despair", color: "#1D3557" }
+            { name: "Worried", color: "#64B5F6" },
+            { name: "Insecure", color: "#2196F3" }
           ]
         },
         {
-          name: "loneliness",
-          color: "#3D5A80",
-          angle: 240,
+          name: "Weak",
+          color: "#2196F3",
           tertiaryEmotions: [
-            { name: "isolated", color: "#4D6E9A" },
-            { name: "abandoned", color: "#41628C" },
-            { name: "neglected", color: "#3D5A80" }
+            { name: "Worthless", color: "#42A5F5" },
+            { name: "Insignificant", color: "#1E88E5" }
+          ]
+        },
+        {
+          name: "Rejected",
+          color: "#1E88E5",
+          tertiaryEmotions: [
+            { name: "Inadequate", color: "#2196F3" },
+            { name: "Inferior", color: "#1976D2" }
+          ]
+        },
+        {
+          name: "Threatened",
+          color: "#1976D2",
+          tertiaryEmotions: [
+            { name: "Nervous", color: "#2196F3" },
+            { name: "Exposed", color: "#1565C0" }
           ]
         }
       ]
     },
     {
-      name: "fear",
-      color: "#7209B7",
-      angle: 240,
+      name: "Angry",
+      color: "#E53935",
+      angle: 225,
       secondaryEmotions: [
         {
-          name: "anxiety",
-          color: "#9D4EDD",
-          angle: 240,
+          name: "Let down",
+          color: "#EF5350",
           tertiaryEmotions: [
-            { name: "worry", color: "#B088F9" },
-            { name: "nervousness", color: "#A459D1" },
-            { name: "unease", color: "#9D4EDD" }
+            { name: "Betrayed", color: "#EF9A9A" },
+            { name: "Resentful", color: "#E57373" }
           ]
         },
         {
-          name: "terror",
-          color: "#5A189A",
-          angle: 270,
+          name: "Humiliated",
+          color: "#E57373",
           tertiaryEmotions: [
-            { name: "horror", color: "#6F2DBD" },
-            { name: "panic", color: "#6823B2" },
-            { name: "dread", color: "#5A189A" }
+            { name: "Disrespected", color: "#EF5350" },
+            { name: "Ridiculed", color: "#F44336" }
           ]
         },
         {
-          name: "insecurity",
-          color: "#3C096C",
-          angle: 300,
+          name: "Bitter",
+          color: "#F44336",
           tertiaryEmotions: [
-            { name: "inadequacy", color: "#4E148C" },
-            { name: "helplessness", color: "#430E7C" },
-            { name: "vulnerability", color: "#3C096C" }
+            { name: "Indignant", color: "#E57373" },
+            { name: "Violated", color: "#E53935" }
+          ]
+        },
+        {
+          name: "Mad",
+          color: "#E53935",
+          tertiaryEmotions: [
+            { name: "Furious", color: "#F44336" },
+            { name: "Jealous", color: "#D32F2F" }
+          ]
+        },
+        {
+          name: "Aggressive",
+          color: "#D32F2F",
+          tertiaryEmotions: [
+            { name: "Provoked", color: "#E53935" },
+            { name: "Hostile", color: "#C62828" }
+          ]
+        },
+        {
+          name: "Frustrated",
+          color: "#C62828",
+          tertiaryEmotions: [
+            { name: "Infuriated", color: "#D32F2F" },
+            { name: "Annoyed", color: "#B71C1C" }
+          ]
+        },
+        {
+          name: "Distant",
+          color: "#B71C1C",
+          tertiaryEmotions: [
+            { name: "Withdrawn", color: "#C62828" },
+            { name: "Numb", color: "#D50000" }
           ]
         }
       ]
     },
     {
-      name: "surprise",
-      color: "#4CC9F0",
-      angle: 300,
+      name: "Disgusted",
+      color: "#00897B",
+      angle: 315,
       secondaryEmotions: [
         {
-          name: "amazement",
-          color: "#80D8F7",
-          angle: 300,
+          name: "Critical",
+          color: "#4DB6AC",
           tertiaryEmotions: [
-            { name: "awe", color: "#A9E4FA" },
-            { name: "wonder", color: "#96DEF9" },
-            { name: "astonishment", color: "#80D8F7" }
+            { name: "Skeptical", color: "#80CBC4" },
+            { name: "Dismissive", color: "#26A69A" }
           ]
         },
         {
-          name: "shock",
-          color: "#4361EE",
-          angle: 330,
+          name: "Disapproving",
+          color: "#26A69A",
           tertiaryEmotions: [
-            { name: "bewilderment", color: "#5472F7" },
-            { name: "disbelief", color: "#4895EF" },
-            { name: "confusion", color: "#4361EE" }
+            { name: "Judgmental", color: "#4DB6AC" },
+            { name: "Embarrassed", color: "#009688" }
           ]
         },
         {
-          name: "distraction",
-          color: "#3F37C9",
-          angle: 360,
+          name: "Disappointed",
+          color: "#009688",
           tertiaryEmotions: [
-            { name: "overwhelmed", color: "#4D43E8" },
-            { name: "dazed", color: "#463AD8" },
-            { name: "disoriented", color: "#3F37C9" }
+            { name: "Appalled", color: "#26A69A" },
+            { name: "Revolted", color: "#00897B" }
+          ]
+        },
+        {
+          name: "Awful",
+          color: "#00897B",
+          tertiaryEmotions: [
+            { name: "Nauseated", color: "#009688" },
+            { name: "Detestable", color: "#00796B" }
+          ]
+        },
+        {
+          name: "Repelled",
+          color: "#00796B",
+          tertiaryEmotions: [
+            { name: "Horrified", color: "#00897B" },
+            { name: "Hesitant", color: "#00695C" }
           ]
         }
       ]
@@ -353,7 +484,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
           style={{
             backgroundColor: emotion.color,
             transform: `rotate(${rotationAngle}deg)`,
-            clipPath: `polygon(0 0, 200% 0, 100% 100%, 0 100%)`, //Corrected clipPath
+            clipPath: `polygon(0 0, 100% 0, 100% 100%, 0 100%)`,
             opacity: activePrimary ? (isActive ? 1 : 0.3) : 0.7
           }}
         >
@@ -361,9 +492,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
             className="emotion-label"
             style={{
               transform: `rotate(${-rotationAngle + (sliceAngle/2)}deg)`,
-              transformOrigin: 'bottom left',
-              top: '40%',
-              left: '30%'
+              transformOrigin: 'center center',
             }}
           >
             {emotion.name}
@@ -390,7 +519,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
           style={{
             backgroundColor: emotion.color,
             transform: `rotate(${rotationAngle}deg)`,
-            clipPath: `polygon(0 0, 200% 0, 100% 100%, 0 100%)`, //Corrected clipPath
+            clipPath: `polygon(0 0, 100% 0, 100% 100%, 0 100%)`,
             opacity: activeSecondary ? (isActive ? 1 : 0.3) : 0.7
           }}
         >
@@ -398,9 +527,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
             className="emotion-label"
             style={{
               transform: `rotate(${-rotationAngle + (sliceAngle/2)}deg)`,
-              transformOrigin: 'bottom left',
-              top: '40%',
-              left: '30%'
+              transformOrigin: 'center center',
             }}
           >
             {emotion.name}
@@ -427,7 +554,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
           style={{
             backgroundColor: emotion.color,
             transform: `rotate(${rotationAngle}deg)`,
-            clipPath: `polygon(0 0, 200% 0, 100% 100%, 0 100%)`, //Corrected clipPath
+            clipPath: `polygon(0 0, 100% 0, 100% 100%, 0 100%)`,
             opacity: activeTertiary ? (isActive ? 1 : 0.3) : 0.7
           }}
         >
@@ -435,9 +562,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
             className="emotion-label"
             style={{
               transform: `rotate(${-rotationAngle + (sliceAngle/2)}deg)`,
-              transformOrigin: 'bottom left',
-              top: '40%',
-              left: '30%'
+              transformOrigin: 'center center',
             }}
           >
             {emotion.name}
