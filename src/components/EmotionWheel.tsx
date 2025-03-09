@@ -21,7 +21,6 @@ interface Secondary {
 
 interface Primary {
   name: string;
-  emoji: string; // Added emoji property
   color: string;
   angle: number;
   secondaryEmotions: Secondary[];
@@ -48,7 +47,6 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
   const emotionWheel: Primary[] = [
     {
       name: "Happy",
-      emoji: "😊", // Added emoji
       color: "#FFDE59",
       angle: 0,
       secondaryEmotions: [
@@ -120,7 +118,6 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
     },
     {
       name: "Surprised",
-      emoji: "😲", // Added emoji
       color: "#64B5F6",
       angle: 45,
       secondaryEmotions: [
@@ -160,7 +157,6 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
     },
     {
       name: "Sad",
-      emoji: "😢", // Added emoji
       color: "#78909C",
       angle: 90,
       secondaryEmotions: [
@@ -208,7 +204,6 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
     },
     {
       name: "Bad",
-      emoji: "😫", // Added emoji
       color: "#9575CD",
       angle: 135,
       secondaryEmotions: [
@@ -248,7 +243,6 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
     },
     {
       name: "Fearful",
-      emoji: "😨", // Added emoji
       color: "#4DB6AC",
       angle: 180,
       secondaryEmotions: [
@@ -296,7 +290,6 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
     },
     {
       name: "Angry",
-      emoji: "😠", // Added emoji
       color: "#EF5350",
       angle: 225,
       secondaryEmotions: [
@@ -360,7 +353,6 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
     },
     {
       name: "Disgusted",
-      emoji: "🤢", // Added emoji
       color: "#66BB6A",
       angle: 315,
       secondaryEmotions: [
@@ -844,48 +836,6 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
       : '0, 200, 255';
   };
 
-  const handleNodeClick = (index: number) => {
-    // Placeholder for handling node clicks - needs implementation
-    console.log("Node clicked:", index);
-  };
-
-  const renderEmotionNodes = () => {
-    const nodes = [];
-
-    // Render primary emotions in a circle
-    emotionWheel.forEach((primary, index) => {
-      const angle = (index * (360 / emotionWheel.length)) * (Math.PI / 180);
-      const radius = 120; // Distance from center
-      const x = radius * Math.cos(angle) + 150; // 150 is half of container size
-      const y = radius * Math.sin(angle) + 150;
-
-      const isActive = isNodeActive(index);
-      const isHighlighted = activePrimary && activePrimary.name === primary.name;
-
-      nodes.push(
-        <div 
-          key={`primary-${index}`} 
-          style={{
-            left: `${x}px`,
-            top: `${y}px`,
-            backgroundColor: primary.color,
-            opacity: isHighlighted ? 1 : isActive ? 0.9 : 0.75,
-            transform: `translate(-50%, -50%) scale(${isHighlighted ? 1.2 : isActive ? 1.1 : 1})`,
-            boxShadow: isHighlighted ? `0 0 15px ${primary.color}` : isActive ? `0 0 10px ${primary.color}` : 'none',
-          }}
-          className={`emotion-node primary ${isHighlighted ? 'highlighted' : ''} ${isActive ? 'active' : ''}`}
-          onClick={() => handleNodeClick(index)}
-        >
-          <span className="emotion-emoji">{primary.emoji}</span>
-          <span className="emotion-name">{primary.name}</span>
-        </div>
-      );
-    });
-
-    return nodes;
-  };
-
-
   return (
     <div className="emotion-visualization-container">
       <canvas 
@@ -907,7 +857,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
               <>
                 <div className="path-arrow">→</div>
                 <div className="path-step secondary">
-                  <div className="color-dot" style={{ backgroundColor: activeSecondary.color }}div></div>
+                  <div className="color-dot" style={{ backgroundColor: activeSecondary.color }}></div>
                   <span>{activeSecondary.name}</span>
                 </div>
               </>
@@ -932,7 +882,6 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
           <div className="processing-text">Analyzing emotional patterns...</div>
         </div>
       )}
-      {renderEmotionNodes()}
     </div>
   );
 };
