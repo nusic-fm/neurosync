@@ -27,8 +27,8 @@
   position: relative;
   width: 100%;
   height: 100%;
+  border-radius: 50%;
   transition: transform 2s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
   box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
   overflow: visible;
 }
@@ -40,10 +40,10 @@
 
 @keyframes pulse {
   0% { transform: rotate(var(--rotation)) scale(1); }
-  25% { transform: rotate(var(--rotation)) scale(1.05); filter: hue-rotate(90deg); }
-  50% { transform: rotate(var(--rotation)) scale(1); filter: hue-rotate(180deg); }
-  75% { transform: rotate(var(--rotation)) scale(1.05); filter: hue-rotate(270deg); }
-  100% { transform: rotate(var(--rotation)) scale(1); filter: hue-rotate(360deg); }
+  25% { transform: rotate(var(--rotation)) scale(1.05); }
+  50% { transform: rotate(var(--rotation)) scale(1); }
+  75% { transform: rotate(var(--rotation)) scale(1.05); }
+  100% { transform: rotate(var(--rotation)) scale(1); }
 }
 
 .wheel-center {
@@ -56,11 +56,10 @@
   background-color: white;
   border-radius: 50%;
   z-index: 10;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
   display: flex;
   justify-content: center;
   align-items: center;
-  font-weight: bold;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
 
 .pulse-ring {
@@ -68,122 +67,115 @@
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.2);
-  animation: pulse-center 1.5s infinite;
+  background-color: transparent;
+  border: 2px solid white;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+  animation: pulse-ring 1.5s ease-out infinite;
 }
 
-@keyframes pulse-center {
-  0% { transform: scale(1); opacity: 0.7; }
-  50% { transform: scale(1.3); opacity: 0; }
-  100% { transform: scale(1); opacity: 0.7; }
-}
-
-.primary-wheel,
-.secondary-wheel,
-.tertiary-wheel {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
-  transition: all 0.5s ease;
+@keyframes pulse-ring {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.5); opacity: 0.5; }
+  100% { transform: scale(2); opacity: 0; }
 }
 
 .primary-wheel {
-  z-index: 1;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
 }
 
 .secondary-wheel {
-  z-index: 2;
-  transform: scale(0.7);
+  position: absolute;
+  width: 80%;
+  height: 80%;
+  top: 10%;
+  left: 10%;
+  border-radius: 50%;
+  z-index: 5;
   opacity: 0;
-  transition: all 0.8s ease 0.3s;
+  transform: scale(0.8);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  overflow: hidden;
 }
 
 .secondary-wheel.active {
   opacity: 1;
-  transform: scale(0.7);
+  transform: scale(1);
 }
 
 .tertiary-wheel {
-  z-index: 3;
-  transform: scale(0.4);
+  position: absolute;
+  width: 60%;
+  height: 60%;
+  top: 20%;
+  left: 20%;
+  border-radius: 50%;
+  z-index: 6;
   opacity: 0;
-  transition: all 0.8s ease 0.3s;
+  transform: scale(0.8);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  overflow: hidden;
 }
 
 .tertiary-wheel.active {
   opacity: 1;
-  transform: scale(0.4);
+  transform: scale(1);
 }
 
 .emotion-slice {
   position: absolute;
-  top: 0;
-  right: 50%;
   width: 50%;
   height: 50%;
-  transform-origin: 100% 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  left: 50%;
+  top: 0;
+  transform-origin: bottom left;
+  transition: opacity 0.3s ease;
   overflow: hidden;
-  transition: all 0.5s ease;
 }
 
 .emotion-slice.active {
-  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.8));
-}
-
-.primary-emotion.active {
+  opacity: 1;
   z-index: 5;
-}
-
-.secondary-emotion.active {
-  z-index: 6;
-}
-
-.tertiary-emotion.active {
-  z-index: 7;
 }
 
 .emotion-label {
   position: absolute;
-  color: rgba(0, 0, 0, 0.8);
   font-size: 0.9rem;
+  color: rgba(0, 0, 0, 0.8);
   font-weight: bold;
-  text-shadow: 0px 1px 2px rgba(255, 255, 255, 0.5);
-  white-space: nowrap;
-  pointer-events: none;
   text-align: center;
-  width: 100%;
-  top: 70%;
   left: 50%;
+  top: 25%;
   transform-origin: center;
+  text-shadow: 0 0 3px rgba(255, 255, 255, 0.7);
+  pointer-events: none;
+  width: 100px;
+  margin-left: -50px;
+  display: block;
 }
 
 .emotion-path-container {
-  position: relative;
   width: 100%;
-  height: 60px;
   margin-top: 1rem;
   display: flex;
   justify-content: center;
-  align-items: center;
+  position: absolute;
+  bottom: -80px;
 }
 
 .emotion-path {
   display: flex;
   align-items: center;
-  justify-content: center;
-  background-color: rgba(255, 255, 255, 0.2);
-  border-radius: 10px;
-  padding: 0.5rem 1rem;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  background-color: rgba(0, 0, 0, 0.7);
+  padding: 0.7rem 1rem;
+  border-radius: 30px;
   opacity: 0;
   transform: translateY(20px);
-  transition: all 0.5s ease;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
 
 .emotion-path.show {
@@ -194,12 +186,15 @@
 .path-step {
   display: flex;
   align-items: center;
-  gap: 5px;
-  font-weight: bold;
-  padding: 5px 10px;
+  padding: 3px 10px;
   border-radius: 15px;
-  background-color: rgba(255, 255, 255, 0.3);
-  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  color: white;
+  margin: 0 2px;
+}
+
+.path-step span {
+  margin-left: 5px;
 }
 
 .path-step.primary {

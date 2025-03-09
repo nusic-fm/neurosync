@@ -352,15 +352,18 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
           className={`emotion-slice primary-emotion ${isActive ? 'active' : ''}`}
           style={{
             backgroundColor: emotion.color,
-            transform: `rotate(${rotationAngle}deg) skew(${90 - sliceAngle}deg)`,
-            opacity: activePrimary ? (isActive ? 1 : 0.3) : 1
+            transform: `rotate(${rotationAngle}deg)`,
+            clipPath: `polygon(0 0, 200% 0, 100% 100%, 0 100%)`, //Corrected clipPath
+            opacity: activePrimary ? (isActive ? 1 : 0.3) : 0.7
           }}
         >
           <span 
             className="emotion-label"
             style={{
-              transform: `skew(${-(90 - sliceAngle)}deg) rotate(${-(rotationAngle + sliceAngle/2)}deg)`,
-              transformOrigin: 'center',
+              transform: `rotate(${-rotationAngle + (sliceAngle/2)}deg)`,
+              transformOrigin: 'bottom left',
+              top: '40%',
+              left: '30%'
             }}
           >
             {emotion.name}
@@ -386,15 +389,18 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
           className={`emotion-slice secondary-emotion ${isActive ? 'active' : ''}`}
           style={{
             backgroundColor: emotion.color,
-            transform: `rotate(${rotationAngle}deg) skew(${90 - sliceAngle}deg)`,
+            transform: `rotate(${rotationAngle}deg)`,
+            clipPath: `polygon(0 0, 200% 0, 100% 100%, 0 100%)`, //Corrected clipPath
             opacity: activeSecondary ? (isActive ? 1 : 0.3) : 0.7
           }}
         >
           <span 
             className="emotion-label"
             style={{
-              transform: `skew(${-(90 - sliceAngle)}deg) rotate(${-(rotationAngle + sliceAngle/2)}deg)`,
-              transformOrigin: 'center',
+              transform: `rotate(${-rotationAngle + (sliceAngle/2)}deg)`,
+              transformOrigin: 'bottom left',
+              top: '40%',
+              left: '30%'
             }}
           >
             {emotion.name}
@@ -420,15 +426,18 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
           className={`emotion-slice tertiary-emotion ${isActive ? 'active' : ''}`}
           style={{
             backgroundColor: emotion.color,
-            transform: `rotate(${rotationAngle}deg) skew(${90 - sliceAngle}deg)`,
+            transform: `rotate(${rotationAngle}deg)`,
+            clipPath: `polygon(0 0, 200% 0, 100% 100%, 0 100%)`, //Corrected clipPath
             opacity: activeTertiary ? (isActive ? 1 : 0.3) : 0.7
           }}
         >
           <span 
             className="emotion-label"
             style={{
-              transform: `skew(${-(90 - sliceAngle)}deg) rotate(${-(rotationAngle + sliceAngle/2)}deg)`,
-              transformOrigin: 'center',
+              transform: `rotate(${-rotationAngle + (sliceAngle/2)}deg)`,
+              transformOrigin: 'bottom left',
+              top: '40%',
+              left: '30%'
             }}
           >
             {emotion.name}
