@@ -932,6 +932,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
           <div className="processing-text">Analyzing emotional patterns...</div>
         </div>
       )}
+      {renderEmotionNodes()}
     </div>
   );
 };
