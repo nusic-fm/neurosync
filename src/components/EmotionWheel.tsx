@@ -844,6 +844,48 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
       : '0, 200, 255';
   };
 
+  const handleNodeClick = (index: number) => {
+    // Placeholder for handling node clicks - needs implementation
+    console.log("Node clicked:", index);
+  };
+
+  const renderEmotionNodes = () => {
+    const nodes = [];
+
+    // Render primary emotions in a circle
+    emotionWheel.forEach((primary, index) => {
+      const angle = (index * (360 / emotionWheel.length)) * (Math.PI / 180);
+      const radius = 120; // Distance from center
+      const x = radius * Math.cos(angle) + 150; // 150 is half of container size
+      const y = radius * Math.sin(angle) + 150;
+
+      const isActive = isNodeActive(index);
+      const isHighlighted = activePrimary && activePrimary.name === primary.name;
+
+      nodes.push(
+        <div 
+          key={`primary-${index}`} 
+          style={{
+            left: `${x}px`,
+            top: `${y}px`,
+            backgroundColor: primary.color,
+            opacity: isHighlighted ? 1 : isActive ? 0.9 : 0.75,
+            transform: `translate(-50%, -50%) scale(${isHighlighted ? 1.2 : isActive ? 1.1 : 1})`,
+            boxShadow: isHighlighted ? `0 0 15px ${primary.color}` : isActive ? `0 0 10px ${primary.color}` : 'none',
+          }}
+          className={`emotion-node primary ${isHighlighted ? 'highlighted' : ''} ${isActive ? 'active' : ''}`}
+          onClick={() => handleNodeClick(index)}
+        >
+          <span className="emotion-emoji">{primary.emoji}</span>
+          <span className="emotion-name">{primary.name}</span>
+        </div>
+      );
+    });
+
+    return nodes;
+  };
+
+
   return (
     <div className="emotion-visualization-container">
       <canvas 
@@ -865,7 +907,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
               <>
                 <div className="path-arrow">→</div>
                 <div className="path-step secondary">
-                  <div className="color-dot" style={{ backgroundColor: activeSecondary.color }}></div>
+                  <div className="color-dot" style={{ backgroundColor: activeSecondary.color }}div></div>
                   <span>{activeSecondary.name}</span>
                 </div>
               </>
