@@ -8,28 +8,24 @@ interface EmotionWheelProps {
   isProcessing: boolean;
 }
 
-// Define emotion data structure
-interface EmotionData {
-  primary: {
-    [key: string]: {
-      color: string;
-      angle: number;
-      secondary: {
-        [key: string]: {
-          color: string;
-          angle: number;
-          tertiary: string[];
-        };
-      };
-    };
-  };
-  mappings: {
-    [key: string]: {
-      primary: string;
-      secondary: string;
-      tertiary: string;
-    };
-  };
+// Emotion wheel data structure
+interface Tertiary {
+  name: string;
+  color: string;
+}
+
+interface Secondary {
+  name: string;
+  color: string;
+  angle: number;
+  tertiaryEmotions: Tertiary[];
+}
+
+interface Primary {
+  name: string;
+  color: string;
+  angle: number;
+  secondaryEmotions: Secondary[];
 }
 
 const EmotionWheel: React.FC<EmotionWheelProps> = ({ 
@@ -37,188 +33,315 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
   wheelRotation, 
   isProcessing 
 }) => {
-  const [activePrimary, setActivePrimary] = useState<string | null>(null);
-  const [activeSecondary, setActiveSecondary] = useState<string | null>(null);
-  const [activeTertiary, setActiveTertiary] = useState<string | null>(null);
+  // States for active emotions and animation
+  const [activePrimary, setActivePrimary] = useState<Primary | null>(null);
+  const [activeSecondary, setActiveSecondary] = useState<Secondary | null>(null);
+  const [activeTertiary, setActiveTertiary] = useState<Tertiary | null>(null);
   const [animationStage, setAnimationStage] = useState<number>(0);
   
-  // Emotion wheel data structure
-  const emotions: EmotionData = {
-    primary: {
-      joy: {
-        color: "#FFDE59",
-        angle: 60,
-        secondary: {
-          serenity: {
-            color: "#A0D6B4",
-            angle: 30,
-            tertiary: ["contentment", "bliss", "peaceful"]
-          },
-          ecstasy: {
-            color: "#FFA500",
-            angle: 60,
-            tertiary: ["excited", "enthusiastic", "elated"]
-          },
-          love: {
-            color: "#FF69B4",
-            angle: 90,
-            tertiary: ["adoration", "affection", "compassion"]
-          }
+  // Define the emotion wheel structure
+  const emotionWheel: Primary[] = [
+    {
+      name: "joy",
+      color: "#FFDE59",
+      angle: 60,
+      secondaryEmotions: [
+        {
+          name: "serenity",
+          color: "#A0D6B4",
+          angle: 30,
+          tertiaryEmotions: [
+            { name: "contentment", color: "#B8E0D2" },
+            { name: "peaceful", color: "#8ED1BD" },
+            { name: "bliss", color: "#A0D6B4" }
+          ]
+        },
+        {
+          name: "ecstasy",
+          color: "#FFA500",
+          angle: 60,
+          tertiaryEmotions: [
+            { name: "excited", color: "#FFB84D" },
+            { name: "enthusiastic", color: "#FFC266" },
+            { name: "elated", color: "#FFD699" }
+          ]
+        },
+        {
+          name: "love",
+          color: "#FF69B4",
+          angle: 90,
+          tertiaryEmotions: [
+            { name: "adoration", color: "#FF99CC" },
+            { name: "affection", color: "#FF80BF" },
+            { name: "compassion", color: "#FF69B4" }
+          ]
         }
-      },
-      sadness: {
-        color: "#5B92E5",
-        angle: 180,
-        secondary: {
-          grief: {
-            color: "#7869AA",
-            angle: 150,
-            tertiary: ["anguish", "heartbroken", "despair"]
-          },
-          melancholy: {
-            color: "#6495ED",
-            angle: 180,
-            tertiary: ["nostalgia", "regret", "wistful"]
-          },
-          disappointment: {
-            color: "#87CEEB",
-            angle: 210,
-            tertiary: ["disheartened", "dismayed", "upset"]
-          }
+      ]
+    },
+    {
+      name: "sadness",
+      color: "#5B92E5",
+      angle: 180,
+      secondaryEmotions: [
+        {
+          name: "grief",
+          color: "#7869AA",
+          angle: 150,
+          tertiaryEmotions: [
+            { name: "anguish", color: "#8F7FC2" },
+            { name: "heartbroken", color: "#9C8DCF" },
+            { name: "despair", color: "#7869AA" }
+          ]
+        },
+        {
+          name: "melancholy",
+          color: "#6495ED",
+          angle: 180,
+          tertiaryEmotions: [
+            { name: "nostalgia", color: "#82A9F0" },
+            { name: "regret", color: "#93B4F2" },
+            { name: "wistful", color: "#6495ED" }
+          ]
+        },
+        {
+          name: "disappointment",
+          color: "#87CEEB",
+          angle: 210,
+          tertiaryEmotions: [
+            { name: "dejected", color: "#A5DAF1" },
+            { name: "disheartened", color: "#9CD4EF" },
+            { name: "dismayed", color: "#87CEEB" }
+          ]
         }
-      },
-      anger: {
-        color: "#E53935",
-        angle: 300,
-        secondary: {
-          rage: {
-            color: "#B71C1C",
-            angle: 270,
-            tertiary: ["fury", "hostility", "outrage"]
-          },
-          irritation: {
-            color: "#FF6347",
-            angle: 300,
-            tertiary: ["annoyed", "agitated", "frustrated"]
-          },
-          disgust: {
-            color: "#9C27B0",
-            angle: 330,
-            tertiary: ["revulsion", "loathing", "aversion"]
-          }
+      ]
+    },
+    {
+      name: "fear",
+      color: "#A875FF",
+      angle: 300,
+      secondaryEmotions: [
+        {
+          name: "horror",
+          color: "#9966CC",
+          angle: 270,
+          tertiaryEmotions: [
+            { name: "terrified", color: "#B088D1" },
+            { name: "dread", color: "#A569BD" },
+            { name: "panic", color: "#9966CC" }
+          ]
+        },
+        {
+          name: "anxiety",
+          color: "#BA55D3",
+          angle: 300,
+          tertiaryEmotions: [
+            { name: "nervous", color: "#C77DDB" },
+            { name: "worried", color: "#E3D4E6" },
+            { name: "stressed", color: "#BA55D3" }
+          ]
+        },
+        {
+          name: "insecurity",
+          color: "#D8BFD8",
+          angle: 330,
+          tertiaryEmotions: [
+            { name: "vulnerable", color: "#E6D7E6" },
+            { name: "inadequate", color: "#DFCBDF" },
+            { name: "helpless", color: "#D8BFD8" }
+          ]
         }
-      },
-      fear: {
-        color: "#8BC34A",
-        angle: 240,
-        secondary: {
-          terror: {
-            color: "#004D40",
-            angle: 240,
-            tertiary: ["horror", "panic", "dread"]
-          },
-          apprehension: {
-            color: "#81C784",
-            angle: 270,
-            tertiary: ["worried", "anxious", "nervous"]
-          }
+      ]
+    },
+    {
+      name: "anger",
+      color: "#FF5757",
+      angle: 0,
+      secondaryEmotions: [
+        {
+          name: "rage",
+          color: "#FF0000",
+          angle: 0,
+          tertiaryEmotions: [
+            { name: "furious", color: "#FF4D4D" },
+            { name: "outraged", color: "#FF3333" },
+            { name: "vengeful", color: "#FF0000" }
+          ]
+        },
+        {
+          name: "irritation",
+          color: "#FF6347",
+          angle: 30,
+          tertiaryEmotions: [
+            { name: "annoyed", color: "#FF8573" },
+            { name: "frustrated", color: "#FF745F" },
+            { name: "aggravated", color: "#FF6347" }
+          ]
+        },
+        {
+          name: "disgust",
+          color: "#CD5C5C",
+          angle: 330,
+          tertiaryEmotions: [
+            { name: "revolted", color: "#D78080" },
+            { name: "contempt", color: "#D26D6D" },
+            { name: "repulsed", color: "#CD5C5C" }
+          ]
         }
-      },
-      surprise: {
-        color: "#29B6F6",
-        angle: 120,
-        secondary: {
-          amazement: {
-            color: "#00BCD4",
-            angle: 120,
-            tertiary: ["awe", "wonder", "astonishment"]
-          },
-          distraction: {
-            color: "#80DEEA",
-            angle: 150,
-            tertiary: ["confusion", "disorientation", "bewilderment"]
-          }
+      ]
+    },
+    {
+      name: "surprise",
+      color: "#FFFC59",
+      angle: 120,
+      secondaryEmotions: [
+        {
+          name: "amazement",
+          color: "#FFD700",
+          angle: 120,
+          tertiaryEmotions: [
+            { name: "astonished", color: "#FFDF33" },
+            { name: "awestruck", color: "#FFE666" },
+            { name: "wonderment", color: "#FFD700" }
+          ]
+        },
+        {
+          name: "confusion",
+          color: "#FADA5E",
+          angle: 150,
+          tertiaryEmotions: [
+            { name: "perplexed", color: "#FBE27F" },
+            { name: "disillusioned", color: "#FBDF6F" },
+            { name: "bewildered", color: "#FADA5E" }
+          ]
+        },
+        {
+          name: "excitement",
+          color: "#FFFF00",
+          angle: 90,
+          tertiaryEmotions: [
+            { name: "eager", color: "#FFFF4D" },
+            { name: "energetic", color: "#FFFF33" },
+            { name: "thrilled", color: "#FFFF00" }
+          ]
         }
-      },
-      neutral: {
-        color: "#9E9E9E",
-        angle: 0,
-        secondary: {
-          calmness: {
-            color: "#B0BEC5",
-            angle: 0,
-            tertiary: ["composed", "collected", "tranquil"]
-          }
+      ]
+    }
+  ];
+
+  // Find all emotion related to the selected emotion
+  useEffect(() => {
+    if (!selectedEmotion) {
+      setActivePrimary(null);
+      setActiveSecondary(null);
+      setActiveTertiary(null);
+      setAnimationStage(0);
+      return;
+    }
+
+    const normalizedEmotion = selectedEmotion.toLowerCase().trim();
+    
+    // Animation sequence
+    setAnimationStage(0);
+    
+    // First look for primary emotions
+    const primary = emotionWheel.find(
+      p => p.name.toLowerCase() === normalizedEmotion
+    );
+    
+    if (primary) {
+      setTimeout(() => {
+        setActivePrimary(primary);
+        setActiveSecondary(null);
+        setActiveTertiary(null);
+        setAnimationStage(1);
+      }, 300);
+      return;
+    }
+    
+    // Look for secondary emotions
+    for (const primary of emotionWheel) {
+      const secondary = primary.secondaryEmotions.find(
+        s => s.name.toLowerCase() === normalizedEmotion
+      );
+      
+      if (secondary) {
+        setTimeout(() => {
+          setActivePrimary(primary);
+          setAnimationStage(1);
+          
+          setTimeout(() => {
+            setActiveSecondary(secondary);
+            setActiveTertiary(null);
+            setAnimationStage(2);
+          }, 1000);
+        }, 300);
+        return;
+      }
+      
+      // Look for tertiary emotions
+      for (const secondary of primary.secondaryEmotions) {
+        const tertiary = secondary.tertiaryEmotions.find(
+          t => t.name.toLowerCase() === normalizedEmotion
+        );
+        
+        if (tertiary) {
+          setTimeout(() => {
+            setActivePrimary(primary);
+            setAnimationStage(1);
+            
+            setTimeout(() => {
+              setActiveSecondary(secondary);
+              setAnimationStage(2);
+              
+              setTimeout(() => {
+                setActiveTertiary(tertiary);
+                setAnimationStage(3);
+              }, 1000);
+            }, 1000);
+          }, 300);
+          return;
         }
       }
-    },
-    mappings: {
-      // Map API responses to our emotion structure
-      happy: { primary: "joy", secondary: "ecstasy", tertiary: "enthusiastic" },
-      sad: { primary: "sadness", secondary: "melancholy", tertiary: "wistful" },
-      angry: { primary: "anger", secondary: "rage", tertiary: "fury" },
-      fearful: { primary: "fear", secondary: "terror", tertiary: "panic" },
-      surprised: { primary: "surprise", secondary: "amazement", tertiary: "astonishment" },
-      disgusted: { primary: "anger", secondary: "disgust", tertiary: "revulsion" },
-      neutral: { primary: "neutral", secondary: "calmness", tertiary: "composed" }
     }
-  };
-
-  useEffect(() => {
-    if (selectedEmotion) {
-      // Reset animation state
-      setAnimationStage(0);
-      
-      // Map the selected emotion to our structure
-      const mapping = emotions.mappings[selectedEmotion] || 
-                      { primary: "neutral", secondary: "calmness", tertiary: "composed" };
-      
-      // Start animation sequence
-      setActivePrimary(null);
+    
+    // If no exact match, set a default
+    setTimeout(() => {
+      setActivePrimary(emotionWheel[0]);
       setActiveSecondary(null);
       setActiveTertiary(null);
-      
-      // Animate through the emotions in sequence
-      setTimeout(() => {
-        setActivePrimary(mapping.primary);
-        setAnimationStage(1);
-      }, 500);
-      
-      setTimeout(() => {
-        setActiveSecondary(mapping.secondary);
-        setAnimationStage(2);
-      }, 1500);
-      
-      setTimeout(() => {
-        setActiveTertiary(mapping.tertiary);
-        setAnimationStage(3);
-      }, 2500);
-    } else {
-      // Reset when no emotion is selected
-      setActivePrimary(null);
-      setActiveSecondary(null);
-      setActiveTertiary(null);
-      setAnimationStage(0);
-    }
+      setAnimationStage(1);
+    }, 300);
+    
   }, [selectedEmotion]);
 
-  // Generate wheel sections
+  // Render functions
   const renderPrimaryEmotions = () => {
-    return Object.entries(emotions.primary).map(([emotion, data]) => {
-      const isActive = activePrimary === emotion;
-      const style = {
-        backgroundColor: data.color,
-        transform: `rotate(${data.angle}deg)`,
-        opacity: activePrimary ? (isActive ? 1 : 0.3) : 1
-      };
+    return emotionWheel.map((emotion, index) => {
+      const numberOfSlices = emotionWheel.length;
+      const sliceAngle = 360 / numberOfSlices;
+      const rotationAngle = index * sliceAngle;
+      
+      const isActive = activePrimary?.name === emotion.name;
       
       return (
-        <div 
-          key={emotion}
-          className={`primary-emotion ${isActive ? 'active' : ''}`}
-          style={style}
+        <div
+          key={emotion.name}
+          className={`emotion-slice primary-emotion ${isActive ? 'active' : ''}`}
+          style={{
+            backgroundColor: emotion.color,
+            transform: `rotate(${rotationAngle}deg) skew(${90 - sliceAngle}deg)`,
+            opacity: activePrimary ? (isActive ? 1 : 0.3) : 1
+          }}
         >
-          <span className="emotion-label">{emotion}</span>
+          <span 
+            className="emotion-label"
+            style={{
+              transform: `skew(${-(90 - sliceAngle)}deg) rotate(${-(rotationAngle + sliceAngle/2)}deg)`,
+              transformOrigin: 'center',
+            }}
+          >
+            {emotion.name}
+          </span>
         </div>
       );
     });
@@ -227,22 +350,32 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
   const renderSecondaryEmotions = () => {
     if (!activePrimary) return null;
     
-    const primaryData = emotions.primary[activePrimary];
-    return Object.entries(primaryData.secondary).map(([emotion, data]) => {
-      const isActive = activeSecondary === emotion;
-      const style = {
-        backgroundColor: data.color,
-        transform: `rotate(${data.angle}deg)`,
-        opacity: activeSecondary ? (isActive ? 1 : 0.3) : 0.7
-      };
+    return activePrimary.secondaryEmotions.map((emotion, index) => {
+      const numberOfSlices = activePrimary.secondaryEmotions.length;
+      const sliceAngle = 360 / numberOfSlices;
+      const rotationAngle = index * sliceAngle;
+      
+      const isActive = activeSecondary?.name === emotion.name;
       
       return (
-        <div 
-          key={emotion}
-          className={`secondary-emotion ${isActive ? 'active' : ''} ${animationStage >= 2 ? 'show' : ''}`}
-          style={style}
+        <div
+          key={emotion.name}
+          className={`emotion-slice secondary-emotion ${isActive ? 'active' : ''} ${animationStage >= 2 ? 'show' : ''}`}
+          style={{
+            backgroundColor: emotion.color,
+            transform: `rotate(${rotationAngle}deg) skew(${90 - sliceAngle}deg)`,
+            opacity: activeSecondary ? (isActive ? 1 : 0.3) : 0.7
+          }}
         >
-          <span className="emotion-label">{emotion}</span>
+          <span 
+            className="emotion-label"
+            style={{
+              transform: `skew(${-(90 - sliceAngle)}deg) rotate(${-(rotationAngle + sliceAngle/2)}deg)`,
+              transformOrigin: 'center',
+            }}
+          >
+            {emotion.name}
+          </span>
         </div>
       );
     });
@@ -251,24 +384,32 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
   const renderTertiaryEmotions = () => {
     if (!activePrimary || !activeSecondary) return null;
     
-    const secondaryData = emotions.primary[activePrimary].secondary[activeSecondary];
-    return secondaryData.tertiary.map((emotion, index) => {
-      const isActive = activeTertiary === emotion;
-      const angle = secondaryData.angle - 15 + (index * 15);
-      const style = {
-        backgroundColor: secondaryData.color,
-        transform: `rotate(${angle}deg)`,
-        opacity: activeTertiary ? (isActive ? 1 : 0.3) : 0.7,
-        filter: 'brightness(1.1)'
-      };
+    return activeSecondary.tertiaryEmotions.map((emotion, index) => {
+      const numberOfSlices = activeSecondary.tertiaryEmotions.length;
+      const sliceAngle = 360 / numberOfSlices;
+      const rotationAngle = index * sliceAngle;
+      
+      const isActive = activeTertiary?.name === emotion.name;
       
       return (
-        <div 
-          key={emotion}
-          className={`tertiary-emotion ${isActive ? 'active' : ''} ${animationStage >= 3 ? 'show' : ''}`}
-          style={style}
+        <div
+          key={emotion.name}
+          className={`emotion-slice tertiary-emotion ${isActive ? 'active' : ''} ${animationStage >= 3 ? 'show' : ''}`}
+          style={{
+            backgroundColor: emotion.color,
+            transform: `rotate(${rotationAngle}deg) skew(${90 - sliceAngle}deg)`,
+            opacity: activeTertiary ? (isActive ? 1 : 0.3) : 0.7
+          }}
         >
-          <span className="emotion-label">{emotion}</span>
+          <span 
+            className="emotion-label"
+            style={{
+              transform: `skew(${-(90 - sliceAngle)}deg) rotate(${-(rotationAngle + sliceAngle/2)}deg)`,
+              transformOrigin: 'center',
+            }}
+          >
+            {emotion.name}
+          </span>
         </div>
       );
     });
@@ -279,25 +420,64 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
       <div className="wheel-pointer"></div>
       <div 
         className={`emotion-wheel ${isProcessing ? 'processing' : ''}`} 
-        style={{ transform: isProcessing ? `rotate(${wheelRotation}deg)` : 'rotate(0deg)' }}
+        style={{ 
+          transform: `rotate(${wheelRotation}deg)`,
+          '--rotation': `${wheelRotation}deg`
+        } as React.CSSProperties}
       >
-        <div className="wheel-center"></div>
-        <div className="primary-wheel">{renderPrimaryEmotions()}</div>
-        <div className="secondary-wheel">{renderSecondaryEmotions()}</div>
-        <div className="tertiary-wheel">{renderTertiaryEmotions()}</div>
+        <div className="wheel-center">
+          {animationStage > 0 && <div className="pulse-ring"></div>}
+        </div>
         
-        {selectedEmotion && (
-          <div className="emotion-result">
-            <div className="emotion-path">
-              {activePrimary && <span className="primary-label">{activePrimary}</span>}
-              {activePrimary && activeSecondary && <span className="arrow">→</span>}
-              {activeSecondary && <span className="secondary-label">{activeSecondary}</span>}
-              {activeSecondary && activeTertiary && <span className="arrow">→</span>}
-              {activeTertiary && <span className="tertiary-label">{activeTertiary}</span>}
-            </div>
+        <div className="primary-wheel">
+          {renderPrimaryEmotions()}
+        </div>
+        
+        {activePrimary && (
+          <div className={`secondary-wheel ${animationStage >= 2 ? 'active' : ''}`}>
+            {renderSecondaryEmotions()}
+          </div>
+        )}
+        
+        {activePrimary && activeSecondary && (
+          <div className={`tertiary-wheel ${animationStage >= 3 ? 'active' : ''}`}>
+            {renderTertiaryEmotions()}
           </div>
         )}
       </div>
+      
+      {selectedEmotion && (
+        <div className="emotion-path-container">
+          <div className={`emotion-path ${animationStage > 0 ? 'show' : ''}`}>
+            {activePrimary && (
+              <div className="path-step primary">
+                <div className="color-dot" style={{ backgroundColor: activePrimary.color }}></div>
+                <span>{activePrimary.name}</span>
+              </div>
+            )}
+            
+            {activePrimary && activeSecondary && (
+              <>
+                <div className="path-arrow">→</div>
+                <div className={`path-step secondary ${animationStage >= 2 ? 'show' : ''}`}>
+                  <div className="color-dot" style={{ backgroundColor: activeSecondary.color }}></div>
+                  <span>{activeSecondary.name}</span>
+                </div>
+              </>
+            )}
+            
+            {activePrimary && activeSecondary && activeTertiary && (
+              <>
+                <div className="path-arrow">→</div>
+                <div className={`path-step tertiary ${animationStage >= 3 ? 'show' : ''}`}>
+                  <div className="color-dot" style={{ backgroundColor: activeTertiary.color }}></div>
+                  <span>{activeTertiary.name}</span>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

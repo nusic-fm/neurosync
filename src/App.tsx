@@ -80,7 +80,7 @@ export default function App() {
           });
 
           console.log("API response status:", emotionResponse.status);
-          
+
           if (!emotionResponse.ok) {
             const errorText = await emotionResponse.text().catch(() => "No error details available");
             console.error("Emotion API Error Response:", emotionResponse.status, errorText);
@@ -97,13 +97,13 @@ export default function App() {
             emotionData = await emotionResponse.text();
             console.log("Emotion API text response:", emotionData);
           }
-          
+
           // Based on the format you provided:
           // const id = res.data.splite(":")[1].trim().toLowerCase()
           // Example: Summary: abaondoned
-          
+
           let parsedEmotion = 'neutral';
-          
+
           // Check if response is an object with data property
           if (typeof emotionData === 'object' && emotionData.data) {
             console.log("Using object data format");
@@ -123,7 +123,7 @@ export default function App() {
             console.log("Using basic colon format");
             parsedEmotion = emotionData.split(':')[1]?.trim().toLowerCase() || 'neutral';
           }
-          
+
           console.log("Parsed emotion:", parsedEmotion);
 
           // Make sure we have a valid emotion ID by removing any extra spaces or unexpected characters
@@ -306,7 +306,7 @@ export default function App() {
   return (
     <main className="app-container">
       <h1 className="app-title">Emotional Speech Generator</h1>
-      
+
       <div className="api-status">
         <div className={`indicator ${apiStatus}`}></div>
         <span>
@@ -329,7 +329,7 @@ export default function App() {
           disabled={isProcessing}
           className="text-input"
         />
-        
+
         <div className="test-options">
           <span>Quick Test Queries: </span>
           <span className="test-query" onClick={() => setInputText("I'm in the town, lets roam around")}>
@@ -357,12 +357,12 @@ export default function App() {
               try {
                 setStatusMessage('Checking API connection...');
                 setErrorMessage('');
-                
+
                 // First log the full diagnostic info
                 console.log("API DIAGNOSTICS START -----");
                 console.log("Browser info:", navigator.userAgent);
                 console.log("Current time:", new Date().toISOString());
-                
+
                 // Try a direct fetch with detailed logging
                 try {
                   console.log("Making direct API test call...");
@@ -380,22 +380,22 @@ export default function App() {
                     console.error("Direct fetch error:", e);
                     throw e;
                   });
-                  
+
                   console.log("Direct API response status:", directResponse.status);
                   console.log("Direct API response headers:", Object.fromEntries([...directResponse.headers]));
-                  
+
                   const responseText = await directResponse.text();
                   console.log("Direct API response text:", responseText);
-                  
+
                   // Now use the utility function
                   const isOnline = await checkEmotionApiHealth();
                   console.log("API DIAGNOSTICS END -----");
-                  
+
                   setApiStatus(isOnline ? 'online' : 'offline');
                   setStatusMessage(isOnline ? 
                     'API connection successful! The emotion API is online.' : 
                     'API connection failed. The emotion API appears to be offline. See console for details.');
-                  
+
                   if (!isOnline) {
                     setErrorMessage('API server appears to be offline. Please check browser console for diagnostic information.');
                   }
@@ -430,18 +430,18 @@ export default function App() {
                   time: new Date(),
                   result: testResult
                 });
-                
+
                 if (!testResult.success) {
                   setApiStatus('offline');
                   throw new Error(testResult.error || "API test failed");
                 }
-                
+
                 setApiStatus('online');
-                
+
                 // Parse the emotion from the test result
                 let emotion = testResult.parsedEmotion || 'neutral';
                 console.log("Test parsed emotion:", emotion);
-                
+
                 // Clean up the emotion string (remove any non-alphanumeric characters)
                 emotion = emotion.replace(/[^a-z]/g, '');
                 if (!emotion) emotion = 'neutral';
@@ -533,7 +533,7 @@ export default function App() {
           <h2>Selected Emotion: <span className="emotion-tag">{selectedEmotion}</span></h2>
         </div>
       )}
-      
+
       <div className="debug-section">
         <details>
           <summary>API Diagnostics (Expand for troubleshooting)</summary>
@@ -546,15 +546,15 @@ export default function App() {
                 try {
                   setStatusMessage('Running manual API test...');
                   setErrorMessage('');
-                  
+
                   console.log("MANUAL API TEST START -----");
-                  
+
                   // Try a direct fetch with detailed logging
                   const testPayload = { query: "I'm in the town, lets roam around" };
-                  
+
                   console.log("Test payload:", JSON.stringify(testPayload));
                   console.log("Sending manual test to API...");
-                  
+
                   const testResponse = await fetch('https://emorag-arangodb-py-547962548252.us-central1.run.app/extract-emotions/qa', {
                     method: 'POST',
                     headers: {
@@ -571,10 +571,10 @@ export default function App() {
                     console.error("Manual test fetch error:", e);
                     throw e;
                   });
-                  
+
                   console.log("Manual test response status:", testResponse.status);
                   console.log("Manual test response headers:", Object.fromEntries([...testResponse.headers]));
-                  
+
                   if (testResponse.ok) {
                     let responseContent;
                     try {
@@ -584,7 +584,7 @@ export default function App() {
                       responseContent = await testResponse.text();
                       console.log("Manual test response (Text):", responseContent);
                     }
-                    
+
                     setStatusMessage(`Manual API test successful! Response received.`);
                     console.log("MANUAL API TEST END -----");
                   } else {
