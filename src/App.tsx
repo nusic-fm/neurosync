@@ -102,12 +102,17 @@ export default function App() {
         let emotionId = 'neutral';
 
         try {
+          console.log("Sending to emotion API:", JSON.stringify({ query: inputText }));
+          
           const emotionResponse = await fetch('https://emorag-arangodb-py-547962548252.us-central1.run.app/extract-emotions/qa', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+              'Content-Type': 'application/json',
+              'Accept': 'text/plain'
+            },
             body: JSON.stringify({ query: inputText }),
             // Adding timeout to prevent long-hanging requests
-            signal: AbortSignal.timeout(15000),
+            signal: AbortSignal.timeout(30000),
             // Add mode for CORS
             mode: 'cors',
             // Add cache control
@@ -119,19 +124,34 @@ export default function App() {
           }
 
           const emotionData = await emotionResponse.text();
-          console.log("Emotion API response:", emotionData);
+          console.log("Emotion API raw response:", emotionData);
 
-          // Correct parsing based on your example
+          // Extract emotion from the response based on the provided example format
           let parsedEmotion = '';
-          if (emotionData.includes(':')) {
-            parsedEmotion = emotionData.split(':')[1]?.trim().toLowerCase() || 'neutral';
-          } else if (emotionData.includes('Summary:')) {
+          
+          if (emotionData.includes('Summary:')) {
+            // Format: "Summary: abandoned"
             parsedEmotion = emotionData.split('Summary:')[1]?.trim().toLowerCase() || 'neutral';
+            console.log("Parsed emotion from 'Summary:' format:", parsedEmotion);
+          } else if (emotionData.includes(':')) {
+            // Format: "response: abandoned"
+            parsedEmotion = emotionData.split(':')[1]?.trim().toLowerCase() || 'neutral';
+            console.log("Parsed emotion from ':' format:", parsedEmotion);
           } else {
+            // If no clear format, just use the cleaned text
             parsedEmotion = emotionData.trim().toLowerCase() || 'neutral';
+            console.log("Using raw response as emotion:", parsedEmotion);
           }
 
-          emotionId = parsedEmotion;
+          // Make sure we have a valid emotion ID by removing any extra spaces or unexpected characters
+          emotionId = parsedEmotion.replace(/[^a-z]/g, '');
+          
+          // If emotion ended up empty, use neutral
+          if (!emotionId) {
+            emotionId = 'neutral';
+          }
+          
+          console.log("Final extracted emotion ID:", emotionId);
           console.log("Extracted emotion ID:", emotionId);
           setStatusMessage(`Detected emotion: ${emotionId}`);
 
@@ -326,13 +346,79 @@ export default function App() {
           disabled={isProcessing}
           className="text-input"
         />
-        <button 
-          type="submit" 
-          disabled={isProcessing || !inputText.trim()} 
-          className="submit-button"
-        >
-          {isProcessing ? `Processing (${processingStage})...` : 'Generate Speech'}
-        </button>
+        <div className="button-group">
+          <button 
+            type="submit" 
+            disabled={isProcessing || !inputText.trim()} 
+            className="submit-button"
+          >
+            {isProcessing ? `Processing (${processingStage})...` : 'Generate Speech'}
+          </button>
+          <button 
+            type="button" 
+            disabled={isProcessing || !inputText.trim()} 
+            className="test-button"
+            onClick={async () => {
+              try {
+                setIsProcessing(true);
+                setStatusMessage('Testing emotion API...');
+                setErrorMessage('');
+                
+                console.log("Testing emotion API with:", inputText);
+                
+                const emotionResponse = await fetch('https://emorag-arangodb-py-547962548252.us-central1.run.app/extract-emotions/qa', {
+                  method: 'POST',
+                  headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'text/plain'
+                  },
+                  body: JSON.stringify({ query: inputText }),
+                  signal: AbortSignal.timeout(30000)
+                });
+                
+                if (!emotionResponse.ok) {
+                  throw new Error(`API returned status ${emotionResponse.status}`);
+                }
+                
+                const responseText = await emotionResponse.text();
+                console.log("API Response:", responseText);
+                
+                let emotion = 'neutral';
+                if (responseText.includes('Summary:')) {
+                  emotion = responseText.split('Summary:')[1]?.trim().toLowerCase() || 'neutral';
+                } else if (responseText.includes(':')) {
+                  emotion = responseText.split(':')[1]?.trim().toLowerCase() || 'neutral';
+                } else {
+                  emotion = responseText.trim().toLowerCase() || 'neutral';
+                }
+                
+                setSelectedEmotion(emotion);
+                setStatusMessage(`Emotion API test successful! Emotion: ${emotion}`);
+                
+                // Set wheel position
+                const emotionPositions: Record<string, number> = {
+                  happy: 180,
+                  sad: 0,
+                  angry: 270,
+                  fearful: 90,
+                  surprised: 135,
+                  disgusted: 315,
+                  neutral: 225,
+                };
+                setWheelRotation(emotionPositions[emotion] || Math.random() * 360);
+                
+              } catch (error: any) {
+                console.error("Emotion API Test Error:", error);
+                setErrorMessage(`Emotion API Test Error: ${error.message}`);
+                setStatusMessage('Emotion API test failed');
+              } finally {
+                setIsProcessing(false);
+              }
+            }}
+          >
+            Test Emotion API Only
+          </button>
+        </div>
 
         {statusMessage && (
           <div className="status-message">
