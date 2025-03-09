@@ -319,13 +319,19 @@ export default function App() {
 
   return (
     <main className="app-container">
-      <h1 className="app-title">Wheel of Emotions Speech Generator</h1>
+      {/* Add scanline effect for cyberpunk feel */}
+      <div className="scanline"></div>
+      
+      <h1 className="app-title">NEURO<span style={{color: '#FF00FF'}}>SYNC</span> v2.0</h1>
+      <h2 style={{fontSize: '1.2rem', textTransform: 'uppercase', letterSpacing: '3px', marginTop: '-1rem', marginBottom: '1.5rem', color: '#00eeff', textAlign: 'center'}}>
+        Emotion Recognition System
+      </h2>
 
       <div className="api-status">
         <div className={`indicator ${apiStatus}`}></div>
         <span>
-          {USE_MOCK_API ? '(MOCK MODE ACTIVE) ' : ''}
-          Emotion API: {apiStatus === 'online' ? (USE_MOCK_API ? 'Mock API Ready' : 'Online') : apiStatus === 'offline' ? 'Offline' : 'Unknown'}
+          {USE_MOCK_API ? '[SIMULATION ACTIVE] ' : '[LIVE CONNECTION] '}
+          EMOTION ENGINE: {apiStatus === 'online' ? (USE_MOCK_API ? 'VIRTUAL MODE' : 'ONLINE') : apiStatus === 'offline' ? 'OFFLINE' : 'INITIALIZING...'}
         </span>
       </div>
 

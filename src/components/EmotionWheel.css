@@ -8,6 +8,24 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  overflow: visible;
+}
+
+/* Add cyber grid behind the wheel */
+.emotion-wheel-container::before {
+  content: "";
+  position: absolute;
+  top: -50px;
+  left: -50px;
+  right: -50px;
+  bottom: -50px;
+  background-image: 
+    radial-gradient(circle at center, rgba(11, 255, 126, 0.05) 0%, transparent 70%),
+    repeating-linear-gradient(to right, transparent, transparent 19px, rgba(11, 255, 126, 0.1) 20px),
+    repeating-linear-gradient(to bottom, transparent, transparent 19px, rgba(11, 255, 126, 0.1) 20px);
+  filter: blur(1px);
+  z-index: -1;
+  pointer-events: none;
 }
 
 .wheel-pointer {
@@ -17,10 +35,10 @@
   transform: translateX(-50%);
   width: 30px;
   height: 30px;
-  background-color: #20dfdf;
+  background-color: #ff00ff;
   clip-path: polygon(50% 100%, 0 0, 100% 0);
   z-index: 100;
-  filter: drop-shadow(0 0 5px rgba(32, 223, 223, 0.8));
+  filter: drop-shadow(0 0 5px rgba(255, 0, 255, 0.8));
 }
 
 .emotion-wheel {
@@ -29,8 +47,48 @@
   height: 100%;
   border-radius: 50%;
   transition: transform 2s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-  box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
+  box-shadow: 
+    0 0 20px rgba(11, 255, 126, 0.5),
+    0 0 40px rgba(11, 255, 126, 0.3),
+    inset 0 0 20px rgba(0, 238, 255, 0.3);
   overflow: visible;
+  background: 
+    radial-gradient(circle at center, rgba(11, 20, 38, 0.8) 0%, rgba(11, 20, 38, 0.7) 70%),
+    conic-gradient(
+      from 0deg,
+      rgba(255, 222, 89, 0.5) 0deg 60deg,
+      rgba(255, 94, 120, 0.5) 60deg 120deg,
+      rgba(230, 57, 70, 0.5) 120deg 180deg,
+      rgba(85, 107, 170, 0.5) 180deg 240deg,
+      rgba(68, 125, 218, 0.5) 240deg 300deg,
+      rgba(111, 207, 151, 0.5) 300deg 360deg
+    );
+}
+
+.emotion-wheel::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  right: -5px;
+  bottom: -5px;
+  border-radius: 50%;
+  background: linear-gradient(45deg, 
+    rgba(11, 255, 126, 0.5), 
+    rgba(0, 238, 255, 0.5), 
+    rgba(255, 0, 255, 0.5), 
+    rgba(11, 255, 126, 0.5));
+  z-index: -1;
+  animation: rotate 10s linear infinite;
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .emotion-wheel.processing {
@@ -51,15 +109,39 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 50px;
-  height: 50px;
-  background-color: white;
+  width: 60px;
+  height: 60px;
+  background-color: rgba(11, 20, 38, 0.8);
+  border: 2px solid rgba(11, 255, 126, 0.8);
   border-radius: 50%;
   z-index: 10;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 
+    0 0 10px rgba(11, 255, 126, 0.5),
+    0 0 20px rgba(11, 255, 126, 0.3),
+    inset 0 0 10px rgba(0, 238, 255, 0.3);
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.wheel-center::before {
+  content: "";
+  position: absolute;
+  width: 70%;
+  height: 70%;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 238, 255, 0.8);
+  box-shadow: 0 0 10px rgba(0, 238, 255, 0.5);
+}
+
+.wheel-center::after {
+  content: "";
+  position: absolute;
+  width: 20%;
+  height: 20%;
+  border-radius: 50%;
+  background-color: rgb(255, 0, 255);
+  box-shadow: 0 0 10px rgba(255, 0, 255, 0.8);
 }
 
 .pulse-ring {
@@ -68,8 +150,8 @@
   height: 50px;
   border-radius: 50%;
   background-color: transparent;
-  border: 2px solid white;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+  border: 2px solid rgba(11, 255, 126, 0.8);
+  box-shadow: 0 0 10px rgba(11, 255, 126, 0.5);
   animation: pulse-ring 1.5s ease-out infinite;
 }
 
@@ -85,6 +167,8 @@
   height: 100%;
   border-radius: 50%;
   overflow: hidden;
+  background-color: rgba(11, 20, 38, 0.5);
+  border: 1px solid rgba(0, 238, 255, 0.3);
 }
 
 .secondary-wheel {
@@ -99,6 +183,9 @@
   transform: scale(0.8);
   transition: opacity 0.5s ease, transform 0.5s ease;
   overflow: hidden;
+  background-color: rgba(11, 20, 38, 0.6);
+  border: 1px solid rgba(255, 0, 255, a.3);
+  box-shadow: 0 0 15px rgba(255, 0, 255, 0.3);
 }
 
 .secondary-wheel.active {
@@ -118,6 +205,9 @@
   transform: scale(0.8);
   transition: opacity 0.5s ease, transform 0.5s ease;
   overflow: hidden;
+  background-color: rgba(11, 20, 38, 0.7);
+  border: 1px solid rgba(11, 255, 126, 0.3);
+  box-shadow: 0 0 15px rgba(11, 255, 126, 0.3);
 }
 
 .tertiary-wheel.active {
@@ -132,29 +222,40 @@
   left: 50%;
   top: 0;
   transform-origin: bottom left;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.3s ease, filter 0.3s ease;
   overflow: hidden;
 }
 
 .emotion-slice.active {
   opacity: 1;
   z-index: 5;
+  filter: brightness(1.5) drop-shadow(0 0 5px currentColor);
 }
 
 .emotion-label {
   position: absolute;
-  font-size: 0.9rem;
-  color: rgba(0, 0, 0, 0.8);
-  font-weight: bold;
+  font-size: 0.85rem;
+  color: white;
+  font-weight: 500;
   text-align: center;
   left: 50%;
   top: 25%;
   transform-origin: center;
-  text-shadow: 0 0 3px rgba(255, 255, 255, 0.7);
+  text-shadow: 0 0 5px currentColor;
   pointer-events: none;
   width: 100px;
   margin-left: -50px;
   display: block;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.emotion-label.active {
+  font-weight: bold;
+  text-shadow: 
+    0 0 5px currentColor,
+    0 0 10px currentColor;
+  animation: glitch-text 2s infinite;
 }
 
 .emotion-path-container {
@@ -169,13 +270,14 @@
 .emotion-path {
   display: flex;
   align-items: center;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: rgba(11, 20, 38, 0.8);
   padding: 0.7rem 1rem;
-  border-radius: 30px;
+  border-radius: 2px;
+  border: 1px solid rgba(11, 255, 126, 0.5);
   opacity: 0;
   transform: translateY(20px);
   transition: opacity 0.5s ease, transform 0.5s ease;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 15px rgba(11, 255, 126, 0.3);
 }
 
 .emotion-path.show {
@@ -187,10 +289,12 @@
   display: flex;
   align-items: center;
   padding: 3px 10px;
-  border-radius: 15px;
-  font-size: 0.9rem;
+  border-radius: 2px;
+  font-size: 0.85rem;
   color: white;
   margin: 0 2px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .path-step span {
@@ -198,32 +302,35 @@
 }
 
 .path-step.primary {
-  background-color: rgba(255, 255, 255, 0.3);
+  background-color: rgba(11, 255, 126, 0.2);
+  border: 1px solid rgba(11, 255, 126, 0.5);
   animation: highlight-path 1s ease 0.5s forwards;
 }
 
 .path-step.secondary {
-  background-color: rgba(255, 255, 255, 0.3);
+  background-color: rgba(0, 238, 255, 0.2);
+  border: 1px solid rgba(0, 238, 255, 0.5);
   opacity: 0.7;
   animation: highlight-path 1s ease 1.5s forwards;
 }
 
 .path-step.tertiary {
-  background-color: rgba(255, 255, 255, 0.3);
+  background-color: rgba(255, 0, 255, 0.2);
+  border: 1px solid rgba(255, 0, 255, 0.5);
   opacity: 0.7;
   animation: highlight-path 1s ease 2.5s forwards;
 }
 
 @keyframes highlight-path {
-  0% { background-color: rgba(255, 255, 255, 0.3); opacity: 0.7; }
-  100% { background-color: rgba(255, 255, 255, 0.7); opacity: 1; }
+  0% { background-color: rgba(255, 255, 255, 0.1); opacity: 0.7; }
+  100% { background-color: rgba(255, 255, 255, 0.2); opacity: 1; }
 }
 
 .color-dot {
   width: 15px;
   height: 15px;
   border-radius: 50%;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 5px currentColor;
 }
 
 .path-arrow {
@@ -232,10 +339,50 @@
   color: rgba(255, 255, 255, 0.8);
 }
 
+/* Scanner line effect inside the wheel */
+.emotion-wheel::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    transparent, 
+    rgba(11, 255, 126, 0.8), 
+    rgba(0, 238, 255, 0.8), 
+    rgba(255, 0, 255, 0.8), 
+    transparent);
+  box-shadow: 0 0 10px rgba(11, 255, 126, 0.5);
+  animation: scan 2s linear infinite;
+  opacity: 0.7;
+}
+
+@keyframes scan {
+  0% {
+    top: 0%;
+  }
+  100% {
+    top: 100%;
+  }
+}
+
+@keyframes glitch-text {
+  0%, 100% { 
+    text-shadow: 0 0 5px currentColor, 0 0 10px currentColor; 
+  }
+  33% { 
+    text-shadow: 2px 0 5px rgba(11, 255, 126, 0.8), -2px 0 5px rgba(255, 0, 255, 0.8); 
+  }
+  66% { 
+    text-shadow: -2px 0 5px rgba(0, 238, 255, 0.8), 2px 0 5px rgba(11, 255, 126, 0.8); 
+  }
+}
+
 @media (max-width: 768px) {
   .emotion-wheel-container {
-    width: 300px;
-    height: 300px;
+    width: 320px;
+    height: 320px;
   }
   
   .emotion-label {
@@ -255,8 +402,8 @@
 
 @media (max-width: 480px) {
   .emotion-wheel-container {
-    width: 250px;
-    height: 250px;
+    width: 280px;
+    height: 280px;
   }
   
   .emotion-label {
