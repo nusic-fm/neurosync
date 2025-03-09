@@ -351,7 +351,7 @@ export default function App() {
 
   return (
     <main className="app-container">
-      <h1 className="app-title">Emotional Speech Generator</h1>
+      <h1 className="app-title">Star of Emotions Speech Generator</h1>
 
       <div className="api-status">
         <div className={`indicator ${apiStatus}`}></div>

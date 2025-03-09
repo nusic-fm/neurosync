@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import './EmotionWheel.css';
 
@@ -38,7 +37,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
   const [activeSecondary, setActiveSecondary] = useState<Secondary | null>(null);
   const [activeTertiary, setActiveTertiary] = useState<Tertiary | null>(null);
   const [animationStage, setAnimationStage] = useState<number>(0);
-  
+
   // Define the emotion wheel structure
   const emotionWheel: Primary[] = [
     {
@@ -272,14 +271,14 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
     setActivePrimary(null);
     setActiveSecondary(null);
     setActiveTertiary(null);
-    
+
     if (!selectedEmotion) return;
-    
+
     // Find the closest matching emotions
     let foundPrimary: Primary | null = null;
     let foundSecondary: Secondary | null = null;
     let foundTertiary: Tertiary | null = null;
-    
+
     // First check for exact tertiary emotion match
     emotionWheel.forEach(primary => {
       primary.secondaryEmotions.forEach(secondary => {
@@ -292,7 +291,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
         });
       });
     });
-    
+
     // If no tertiary match, check for secondary
     if (!foundPrimary) {
       emotionWheel.forEach(primary => {
@@ -304,7 +303,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
         });
       });
     }
-    
+
     // If still no match, check for primary
     if (!foundPrimary) {
       emotionWheel.forEach(primary => {
@@ -313,19 +312,19 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
         }
       });
     }
-    
+
     // If we have any match, begin the animation sequence
     if (foundPrimary) {
       // Set a timeout to allow wheel to finish rotating first
       setTimeout(() => {
         setActivePrimary(foundPrimary);
         setAnimationStage(1);
-        
+
         if (foundSecondary) {
           setTimeout(() => {
             setActiveSecondary(foundSecondary);
             setAnimationStage(2);
-            
+
             if (foundTertiary) {
               setTimeout(() => {
                 setActiveTertiary(foundTertiary);
@@ -337,16 +336,16 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
       }, 500);
     }
   }, [selectedEmotion, wheelRotation]);
-  
+
   // Render functions
   const renderPrimaryEmotions = () => {
     return emotionWheel.map((emotion, index) => {
       const numberOfSlices = emotionWheel.length;
       const sliceAngle = 360 / numberOfSlices;
       const rotationAngle = index * sliceAngle;
-      
+
       const isActive = activePrimary?.name === emotion.name;
-      
+
       return (
         <div
           key={emotion.name}
@@ -370,17 +369,17 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
       );
     });
   };
-  
+
   const renderSecondaryEmotions = () => {
     if (!activePrimary) return null;
-    
+
     return activePrimary.secondaryEmotions.map((emotion, index) => {
       const numberOfSlices = activePrimary.secondaryEmotions.length;
       const sliceAngle = 360 / numberOfSlices;
       const rotationAngle = index * sliceAngle;
-      
+
       const isActive = activeSecondary?.name === emotion.name;
-      
+
       return (
         <div
           key={emotion.name}
@@ -404,17 +403,17 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
       );
     });
   };
-  
+
   const renderTertiaryEmotions = () => {
     if (!activeSecondary) return null;
-    
+
     return activeSecondary.tertiaryEmotions.map((emotion, index) => {
       const numberOfSlices = activeSecondary.tertiaryEmotions.length;
       const sliceAngle = 360 / numberOfSlices;
       const rotationAngle = index * sliceAngle;
-      
+
       const isActive = activeTertiary?.name === emotion.name;
-      
+
       return (
         <div
           key={emotion.name}
@@ -438,7 +437,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
       );
     });
   };
-  
+
   return (
     <div className="emotion-wheel-container">
       <div className="wheel-pointer"></div>
@@ -452,24 +451,24 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
         <div className="wheel-center">
           {animationStage > 0 && <div className="pulse-ring"></div>}
         </div>
-        
+
         <div className="primary-wheel">
           {renderPrimaryEmotions()}
         </div>
-        
+
         {activePrimary && (
           <div className={`secondary-wheel ${animationStage >= 2 ? 'active' : ''}`}>
             {renderSecondaryEmotions()}
           </div>
         )}
-        
+
         {activePrimary && activeSecondary && (
           <div className={`tertiary-wheel ${animationStage >= 3 ? 'active' : ''}`}>
             {renderTertiaryEmotions()}
           </div>
         )}
       </div>
-      
+
       {selectedEmotion && (
         <div className="emotion-path-container">
           <div className={`emotion-path ${animationStage > 0 ? 'show' : ''}`}>
@@ -479,7 +478,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
                 <span>{activePrimary.name}</span>
               </div>
             )}
-            
+
             {activePrimary && activeSecondary && (
               <>
                 <div className="path-arrow">→</div>
@@ -489,7 +488,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
                 </div>
               </>
             )}
-            
+
             {activePrimary && activeSecondary && activeTertiary && (
               <>
                 <div className="path-arrow">→</div>
