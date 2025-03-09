@@ -21,6 +21,7 @@ interface Secondary {
 
 interface Primary {
   name: string;
+  emoji: string; // Added emoji property
   color: string;
   angle: number;
   secondaryEmotions: Secondary[];
@@ -47,6 +48,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
   const emotionWheel: Primary[] = [
     {
       name: "Happy",
+      emoji: "😊", // Added emoji
       color: "#FFDE59",
       angle: 0,
       secondaryEmotions: [
@@ -118,6 +120,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
     },
     {
       name: "Surprised",
+      emoji: "😲", // Added emoji
       color: "#64B5F6",
       angle: 45,
       secondaryEmotions: [
@@ -157,6 +160,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
     },
     {
       name: "Sad",
+      emoji: "😢", // Added emoji
       color: "#78909C",
       angle: 90,
       secondaryEmotions: [
@@ -204,6 +208,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
     },
     {
       name: "Bad",
+      emoji: "😫", // Added emoji
       color: "#9575CD",
       angle: 135,
       secondaryEmotions: [
@@ -243,6 +248,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
     },
     {
       name: "Fearful",
+      emoji: "😨", // Added emoji
       color: "#4DB6AC",
       angle: 180,
       secondaryEmotions: [
@@ -290,6 +296,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
     },
     {
       name: "Angry",
+      emoji: "😠", // Added emoji
       color: "#EF5350",
       angle: 225,
       secondaryEmotions: [
@@ -353,6 +360,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
     },
     {
       name: "Disgusted",
+      emoji: "🤢", // Added emoji
       color: "#66BB6A",
       angle: 315,
       secondaryEmotions: [
