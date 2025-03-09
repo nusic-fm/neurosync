@@ -45,22 +45,37 @@ export default function App() {
       console.log("Calling emotion API...");
       
       try {
-        const emotionResponse = await fetch('https://emorag-arangodb-py-547962548252.us-central1.run.app/extract-emotions/qa', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ query: inputText })
-        });
+        // Emotion Analysis API Call
+        setProcessingStage('emotion');
+        setStatusMessage('Analyzing text emotions...');
+        console.log("Calling emotion API...");
         
-        if (!emotionResponse.ok) {
-          throw new Error(`Emotion API returned status ${emotionResponse.status}`);
+        let emotionId = 'neutral';
+        
+        try {
+          const emotionResponse = await fetch('https://emorag-arangodb-py-547962548252.us-central1.run.app/extract-emotions/qa', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query: inputText }),
+            // Adding timeout to prevent long-hanging requests
+            signal: AbortSignal.timeout(10000)
+          });
+          
+          if (!emotionResponse.ok) {
+            throw new Error(`Emotion API returned status ${emotionResponse.status}: ${emotionResponse.statusText}`);
+          }
+          
+          const emotionData = await emotionResponse.text();
+          console.log("Emotion API response:", emotionData);
+          setStatusMessage(`Detected emotion: ${emotionData}`);
+          
+          emotionId = emotionData.split(':')[1]?.trim().toLowerCase() || 'neutral';
+          console.log("Extracted emotion ID:", emotionId);
+        } catch (emotionApiError: any) {
+          console.error("Emotion API Error:", emotionApiError);
+          setStatusMessage(`Emotion API failed. Using default emotion: neutral. (${emotionApiError.message})`);
+          // Continue with default emotion even if emotion API fails
         }
-        
-        const emotionData = await emotionResponse.text();
-        console.log("Emotion API response:", emotionData);
-        setStatusMessage(`Detected emotion: ${emotionData}`);
-        
-        const emotionId = emotionData.split(':')[1]?.trim().toLowerCase() || 'neutral';
-        console.log("Extracted emotion ID:", emotionId);
         
         // Stop spinning and highlight the emotion
         clearInterval(spinInterval);
@@ -73,6 +88,8 @@ export default function App() {
           angry: 270,
           fearful: 90,
           surprised: 135,
+          disgusted: 315,
+          neutral: 225,
           // Add more emotion mappings as needed
         };
         
@@ -84,28 +101,36 @@ export default function App() {
         setStatusMessage('Generating emotional speech...');
         console.log("Calling TTS API...");
         
-        const ttsResponse = await fetch('https://tts-twitter-agent-547962548252.us-central1.run.app/llasa-voice-synthesizer', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            text: inputText,
-            audio_url: ''
-          })
-        });
-        
-        if (!ttsResponse.ok) {
-          throw new Error(`TTS API returned status ${ttsResponse.status}`);
-        }
-        
-        const ttsData = await ttsResponse.json();
-        console.log("TTS API response:", ttsData);
-        
-        if (ttsData.url) {
-          setSpeechUrl(ttsData.url);
-          setStatusMessage('Speech generated successfully!');
-          console.log("Speech URL set to:", ttsData.url);
-        } else {
-          throw new Error("No URL returned from TTS API");
+        try {
+          const ttsResponse = await fetch('https://tts-twitter-agent-547962548252.us-central1.run.app/llasa-voice-synthesizer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              text: inputText,
+              audio_url: ''
+            }),
+            // Adding timeout to prevent long-hanging requests
+            signal: AbortSignal.timeout(20000)
+          });
+          
+          if (!ttsResponse.ok) {
+            throw new Error(`TTS API returned status ${ttsResponse.status}: ${ttsResponse.statusText}`);
+          }
+          
+          const ttsData = await ttsResponse.json();
+          console.log("TTS API response:", ttsData);
+          
+          if (ttsData.url) {
+            setSpeechUrl(ttsData.url);
+            setStatusMessage('Speech generated successfully!');
+            console.log("Speech URL set to:", ttsData.url);
+          } else {
+            throw new Error("No URL returned from TTS API");
+          }
+        } catch (ttsApiError: any) {
+          console.error("TTS API Error:", ttsApiError);
+          setStatusMessage(`Speech generation failed. (${ttsApiError.message})`);
+          throw ttsApiError;
         }
       } catch (apiError: any) {
         clearInterval(spinInterval);
@@ -114,8 +139,36 @@ export default function App() {
       
     } catch (error: any) {
       console.error('Error processing request:', error);
-      setErrorMessage(`Error: ${error.message || 'Something went wrong'}`);
+      
+      // Determine a more user-friendly error message based on the error type
+      let userErrorMessage = 'Something went wrong';
+      
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        userErrorMessage = 'Network error: Could not connect to the API server. Please check your internet connection and try again.';
+      } else if (error.name === 'AbortError') {
+        userErrorMessage = 'Request timeout: The API server took too long to respond. Please try again later.';
+      } else if (error.message) {
+        userErrorMessage = error.message;
+      }
+      
+      setErrorMessage(`Error: ${userErrorMessage}`);
       setStatusMessage('Failed to process request');
+      
+      // Show a mock emotion if the API calls fail to demonstrate the UI
+      if (!selectedEmotion) {
+        const mockEmotions = ['happy', 'sad', 'angry', 'surprised'];
+        const randomEmotion = mockEmotions[Math.floor(Math.random() * mockEmotions.length)];
+        setSelectedEmotion(randomEmotion);
+        
+        // Mock wheel position for the random emotion
+        const emotionPositions: Record<string, number> = {
+          happy: 180,
+          sad: 0,
+          angry: 270,
+          surprised: 135,
+        };
+        setWheelRotation(emotionPositions[randomEmotion]);
+      }
     } finally {
       setIsProcessing(false);
       setProcessingStage('complete');
