@@ -916,7 +916,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
       }      }
 
       time += 16;
-      requestAnimationFrame(animate);
+      animationRef.current = requestAnimationFrame(animate);
     };
 
     // Start animation
