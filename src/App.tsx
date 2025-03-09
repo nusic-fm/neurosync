@@ -359,21 +359,6 @@ export default function App() {
         processingStage={processingStage}
       />
 
-      {isProcessing && (
-        <div className="processing-status">
-          <div className="processing-pulse"></div>
-          <span>
-            Processing:{" "}
-            {processingStage === "emotion"
-              ? "Analyzing Emotions"
-              : processingStage === "speech"
-                ? "Generating Speech"
-                : processingStage === "initializing"
-                  ? "Initializing"
-                  : "Processing"}
-          </span>
-        </div>
-      )}
 
       <form onSubmit={handleSubmit} className="input-form">
         <input
