@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import './App.css'
 import emotionWheel from './assets/wheel-of-emotions.webp'
+import { checkEmotionApiHealth, testEmotionApi } from './utils'
 
 interface EmotionResponse {
   id: string;
@@ -17,6 +18,8 @@ export default function App() {
   const [statusMessage, setStatusMessage] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [processingStage, setProcessingStage] = useState<string>('');
+  const [apiStatus, setApiStatus] = useState<'unknown' | 'online' | 'offline'>('unknown');
+  const [lastApiTest, setLastApiTest] = useState<{ time: Date | null, result: any }>({ time: null, result: null });
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -61,40 +64,67 @@ export default function App() {
           console.log("Sending to emotion API:", JSON.stringify({ query: inputText }));
           console.log("Emotion API endpoint: https://emorag-arangodb-py-547962548252.us-central1.run.app/extract-emotions/qa");
 
+          // Simplified robust request with better error logging
           const emotionResponse = await fetch('https://emorag-arangodb-py-547962548252.us-central1.run.app/extract-emotions/qa', {
             method: 'POST',
             headers: { 
-              'Content-Type': 'application/json'
+              'Content-Type': 'application/json',
+              'Accept': 'application/json, text/plain, */*'
             },
             body: JSON.stringify({ query: inputText }),
             // Adding timeout to prevent long-hanging requests
             signal: AbortSignal.timeout(30000)
+          }).catch(error => {
+            console.error("Fetch error details:", error);
+            throw new Error("Network error connecting to emotion API. Server may be offline.");
           });
 
           console.log("API response status:", emotionResponse.status);
-
+          
           if (!emotionResponse.ok) {
             const errorText = await emotionResponse.text().catch(() => "No error details available");
             console.error("Emotion API Error Response:", emotionResponse.status, errorText);
             throw new Error(`Emotion API returned status ${emotionResponse.status}: ${errorText}`);
           }
 
-          const emotionData = await emotionResponse.text();
-          console.log("Emotion API raw response:", emotionData);
-
-          // Extract emotion from the response based on the provided example format
-          // Expected format: "Summary: abandoned"
-          let parsedEmotion = '';
-
-          if (emotionData.includes('Summary:')) {
-            // Format: "Summary: abandoned"
-            parsedEmotion = emotionData.split('Summary:')[1]?.trim().toLowerCase() || 'neutral';
-            console.log("Parsed emotion from 'Summary:' format:", parsedEmotion);
-          } else {
-            // If the response doesn't include "Summary:", try direct splitting with ":"
-            parsedEmotion = emotionData.split(':')[1]?.trim().toLowerCase() || 'neutral';
-            console.log("Parsed emotion from ':' format:", parsedEmotion);
+          // Try to get the response as JSON first
+          let emotionData;
+          try {
+            emotionData = await emotionResponse.json();
+            console.log("Emotion API JSON response:", emotionData);
+          } catch (jsonError) {
+            // If JSON parsing fails, get as text
+            emotionData = await emotionResponse.text();
+            console.log("Emotion API text response:", emotionData);
           }
+          
+          // Based on the format you provided:
+          // const id = res.data.splite(":")[1].trim().toLowerCase()
+          // Example: Summary: abaondoned
+          
+          let parsedEmotion = 'neutral';
+          
+          // Check if response is an object with data property
+          if (typeof emotionData === 'object' && emotionData.data) {
+            console.log("Using object data format");
+            const dataStr = emotionData.data.toString();
+            // Handle the typo in "splite" - use split instead
+            if (dataStr.includes(':')) {
+              parsedEmotion = dataStr.split(':')[1]?.trim().toLowerCase() || 'neutral';
+            }
+          } 
+          // If it's text and contains "Summary:"
+          else if (typeof emotionData === 'string' && emotionData.includes('Summary:')) {
+            console.log("Using Summary: format");
+            parsedEmotion = emotionData.split('Summary:')[1]?.trim().toLowerCase() || 'neutral';
+          } 
+          // If it's just text with a colon
+          else if (typeof emotionData === 'string' && emotionData.includes(':')) {
+            console.log("Using basic colon format");
+            parsedEmotion = emotionData.split(':')[1]?.trim().toLowerCase() || 'neutral';
+          }
+          
+          console.log("Parsed emotion:", parsedEmotion);
 
           // Make sure we have a valid emotion ID by removing any extra spaces or unexpected characters
           emotionId = parsedEmotion.replace(/[^a-z]/g, '');
@@ -276,6 +306,13 @@ export default function App() {
   return (
     <main className="app-container">
       <h1 className="app-title">Emotional Speech Generator</h1>
+      
+      <div className="api-status">
+        <div className={`indicator ${apiStatus}`}></div>
+        <span>
+          Emotion API: {apiStatus === 'online' ? 'Online' : apiStatus === 'offline' ? 'Offline' : 'Unknown'}
+        </span>
+      </div>
 
       <div className="wheel-container">
         <div className="wheel-pointer"></div>
@@ -299,6 +336,19 @@ export default function App() {
           disabled={isProcessing}
           className="text-input"
         />
+        
+        <div className="test-options">
+          <span>Quick Test Queries: </span>
+          <span className="test-query" onClick={() => setInputText("I'm in the town, lets roam around")}>
+            "I'm in the town, lets roam around"
+          </span>
+          <span className="test-query" onClick={() => setInputText("I feel so happy today")}>
+            "I feel so happy today"
+          </span>
+          <span className="test-query" onClick={() => setInputText("I am very sad and lonely")}>
+            "I am very sad and lonely"
+          </span>
+        </div>
         <div className="button-group">
           <button 
             type="submit" 
@@ -306,6 +356,33 @@ export default function App() {
             className="submit-button"
           >
             {isProcessing ? `Processing (${processingStage})...` : 'Generate Speech'}
+          </button>
+          <button 
+            type="button"
+            className="api-status-button"
+            onClick={async () => {
+              try {
+                setStatusMessage('Checking API connection...');
+                setErrorMessage('');
+                
+                const isOnline = await checkEmotionApiHealth();
+                
+                setApiStatus(isOnline ? 'online' : 'offline');
+                setStatusMessage(isOnline ? 
+                  'API connection successful! The emotion API is online.' : 
+                  'API connection failed. The emotion API appears to be offline.');
+                
+                if (!isOnline) {
+                  setErrorMessage('API server appears to be offline. Please try again later.');
+                }
+              } catch (error: any) {
+                setApiStatus('offline');
+                setStatusMessage('API connection check failed');
+                setErrorMessage(`API Connection Error: ${error.message}`);
+              }
+            }}
+          >
+            Check API Status
           </button>
           <button 
             type="button" 
@@ -318,50 +395,24 @@ export default function App() {
                 setErrorMessage('');
 
                 console.log("Testing emotion API with:", inputText);
-
-                // First check if the API is available
-                // Skip health check and directly make the API call
-                console.log("Skipping health check, directly testing the API endpoint");
-                try {
-                  console.log("Making API call with payload:", JSON.stringify({ query: inputText }));
+                // Use our utility function to test the API
+                const testResult = await testEmotionApi(inputText);
+                setLastApiTest({
+                  time: new Date(),
+                  result: testResult
+                });
+                
+                if (!testResult.success) {
+                  setApiStatus('offline');
+                  throw new Error(testResult.error || "API test failed");
+                }
+                
+                setApiStatus('online');
+                
+                // Parse the emotion from the test result
+                let emotion = testResult.parsedEmotion || 'neutral';
+                console.log("Test parsed emotion:", emotion);
                   
-                  const emotionResponse = await fetch('https://emorag-arangodb-py-547962548252.us-central1.run.app/extract-emotions/qa', {
-                    method: 'POST',
-                    headers: { 
-                      'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ query: inputText }),
-                    signal: AbortSignal.timeout(30000)
-                  }).catch(error => {
-                    console.error("Fetch error:", error);
-                    throw new Error(`Failed to fetch: ${error.message}`);
-                  });
-
-                  if (!emotionResponse || !emotionResponse.ok) {
-                    const errorStatus = emotionResponse ? emotionResponse.status : "unknown";
-                    const errorText = emotionResponse ? 
-                                      await emotionResponse.text().catch(() => "No error details available") : 
-                                      "No response received";
-                    console.error("API Error Response:", errorStatus, errorText);
-                    throw new Error(`API returned status ${errorStatus}: ${errorText}`);
-                  }
-
-                  // Try to get response as text
-                  const responseText = await emotionResponse.text();
-                  console.log("API Response:", responseText);
-
-                  // Parse the response according to the example
-                  // Example: "Summary: abandoned"
-                  let emotion = 'neutral';
-                  
-                  if (responseText.includes('Summary:')) {
-                    emotion = responseText.split('Summary:')[1]?.trim().toLowerCase() || 'neutral';
-                    console.log("Parsed test emotion from 'Summary:' format:", emotion);
-                  } else if (responseText.includes(':')) {
-                    emotion = responseText.split(':')[1]?.trim().toLowerCase() || 'neutral';
-                    console.log("Parsed test emotion from ':' format:", emotion);
-                  }
-
                   // Clean up the emotion string (remove any non-alphanumeric characters)
                   emotion = emotion.replace(/[^a-z]/g, '');
                   if (!emotion) emotion = 'neutral';
