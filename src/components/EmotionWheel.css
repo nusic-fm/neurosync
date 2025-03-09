@@ -200,3 +200,51 @@
     height: 280px;
   }
 }
+
+.key-name {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Node tooltip styles */
+.node-tooltip {
+  position: absolute;
+  pointer-events: none;
+  background: rgba(10, 15, 30, 0.85);
+  border-radius: 8px;
+  min-width: 180px;
+  box-shadow: 0 0 15px rgba(0, 200, 255, 0.5);
+  backdrop-filter: blur(5px);
+  z-index: 100;
+  transform: translateX(-50%);
+  border: 1px solid;
+  animation: tooltip-appear 0.2s ease-out forwards;
+  opacity: 0;
+}
+
+@keyframes tooltip-appear {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.tooltip-header {
+  padding: 8px 12px;
+  font-weight: bold;
+  text-align: center;
+  border-top-left-radius: 7px;
+  border-top-right-radius: 7px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.tooltip-content {
+  padding: 8px 12px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.9);
+}

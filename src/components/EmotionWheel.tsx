@@ -38,6 +38,14 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
   const [animationStage, setAnimationStage] = useState<number>(0);
   const [neuronNodes, setNeuronNodes] = useState<{x: number, y: number, z: number, color: string, size?: number}[]>([]);
   const [connections, setConnections] = useState<{source: number, target: number, active: boolean}[]>([]);
+  const [hoveredNode, setHoveredNode] = useState<{
+    index: number;
+    x: number;
+    y: number;
+    emotion: string;
+    description: string;
+    color: string;
+  } | null>(null);
 
   // Canvas refs
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -509,6 +517,105 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
+    // Handle mouse movement for hover effects
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!canvas) return;
+      
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+      
+      // Check if mouse is over any node
+      let hovered = false;
+      
+      for (let i = 0; i < neuronNodes.length; i++) {
+        const node = neuronNodes[i];
+        const dx = mouseX - node.x;
+        const dy = mouseY - node.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        // Adjust hit area based on node size
+        const hitRadius = (node.size || 4) + 5;
+        
+        if (distance < hitRadius) {
+          hovered = true;
+          
+          // Determine which emotion this node represents
+          let emotionName = "";
+          let emotionDescription = "";
+          let emotionColor = node.color;
+          
+          // Primary nodes
+          if (i < emotionWheel.length) {
+            const primary = emotionWheel[i];
+            emotionName = primary.name;
+            emotionDescription = `Primary emotion: ${primary.name}`;
+          } 
+          // Secondary nodes
+          else if (i < emotionWheel.length + secondaryCount) {
+            // Find which secondary emotion this is
+            let secondaryIndex = i - emotionWheel.length;
+            let currentIndex = 0;
+            
+            for (const primary of emotionWheel) {
+              for (const secondary of primary.secondaryEmotions) {
+                if (currentIndex === secondaryIndex) {
+                  emotionName = secondary.name;
+                  emotionDescription = `Secondary emotion: ${secondary.name}\nPart of: ${primary.name}`;
+                  break;
+                }
+                currentIndex++;
+              }
+              
+              if (emotionName) break;
+            }
+          }
+          // Tertiary nodes
+          else {
+            // Find which tertiary emotion this is
+            let tertiaryIndex = i - emotionWheel.length - secondaryCount;
+            let currentIndex = 0;
+            
+            outerLoop:
+            for (const primary of emotionWheel) {
+              for (const secondary of primary.secondaryEmotions) {
+                for (const tertiary of secondary.tertiaryEmotions) {
+                  if (currentIndex === tertiaryIndex) {
+                    emotionName = tertiary.name;
+                    emotionDescription = `Tertiary emotion: ${tertiary.name}\nPart of: ${secondary.name} → ${primary.name}`;
+                    break outerLoop;
+                  }
+                  currentIndex++;
+                }
+              }
+            }
+          }
+          
+          setHoveredNode({
+            index: i,
+            x: node.x,
+            y: node.y,
+            emotion: emotionName,
+            description: emotionDescription,
+            color: emotionColor
+          });
+          
+          break;
+        }
+      }
+      
+      if (!hovered) {
+        setHoveredNode(null);
+      }
+    };
+    
+    const handleMouseLeave = () => {
+      setHoveredNode(null);
+    };
+    
+    canvas.addEventListener('mousemove', handleMouseMove);
+    canvas.addEventListener('mouseleave', handleMouseLeave);
+
     // Generate neural network nodes
     const generateNodes = () => {
       const nodes: {x: number, y: number, z: number, color: string, size?: number}[] = [];
@@ -529,6 +636,8 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
 
       // Secondary nodes in middle layer
       let secondaryCount = 0;
+      const totalSecondaries = emotionWheel.reduce((count, primary) => 
+        count + primary.secondaryEmotions.length, 0);
       emotionWheel.forEach((primary, i) => {
         primary.secondaryEmotions.forEach((secondary, j) => {
           const angle = (i * Math.PI * 2) / numPrimaryNodes + (j * Math.PI * 0.25) / primary.secondaryEmotions.length;
@@ -782,6 +891,8 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
     // Cleanup function
     return () => {
       window.removeEventListener('resize', resizeCanvas);
+      canvas.removeEventListener('mousemove', handleMouseMove);
+      canvas.removeEventListener('mouseleave', handleMouseLeave);
       cancelAnimationFrame(animationRef.current);
     };
   }, [activePrimary, activeSecondary, activeTertiary, isProcessing]);
@@ -835,6 +946,10 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
       ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}`
       : '0, 200, 255';
   };
+  
+  // Calculate total secondary emotions for hover detection
+  const secondaryCount = emotionWheel.reduce((count, primary) => 
+    count + primary.secondaryEmotions.length, 0);
 
   return (
     <div className="emotion-visualization-container">
@@ -842,6 +957,26 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
         ref={canvasRef} 
         className={`emotion-neural-net ${isProcessing ? 'processing' : ''}`}
       />
+      
+      {hoveredNode && (
+        <div 
+          className="node-tooltip"
+          style={{
+            left: `${hoveredNode.x}px`,
+            top: `${hoveredNode.y - 40}px`,
+            borderColor: hoveredNode.color
+          }}
+        >
+          <div className="tooltip-header" style={{ backgroundColor: hoveredNode.color }}>
+            {hoveredNode.emotion}
+          </div>
+          <div className="tooltip-content">
+            {hoveredNode.description.split('\n').map((line, i) => (
+              <div key={i}>{line}</div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {selectedEmotion && (
         <div className="emotion-path-container">
