@@ -103,6 +103,7 @@ export default function App() {
 
         try {
           console.log("Sending to emotion API:", JSON.stringify({ query: inputText }));
+          console.log("Emotion API endpoint: https://emorag-arangodb-py-547962548252.us-central1.run.app/extract-emotions/qa");
           
           const emotionResponse = await fetch('https://emorag-arangodb-py-547962548252.us-central1.run.app/extract-emotions/qa', {
             method: 'POST',
@@ -120,27 +121,26 @@ export default function App() {
           });
 
           if (!emotionResponse.ok) {
-            throw new Error(`Emotion API returned status ${emotionResponse.status}: ${emotionResponse.statusText}`);
+            const errorText = await emotionResponse.text().catch(() => "No error details available");
+            console.error("Emotion API Error Response:", emotionResponse.status, errorText);
+            throw new Error(`Emotion API returned status ${emotionResponse.status}: ${errorText}`);
           }
 
           const emotionData = await emotionResponse.text();
           console.log("Emotion API raw response:", emotionData);
 
           // Extract emotion from the response based on the provided example format
+          // Expected format: "Summary: abandoned"
           let parsedEmotion = '';
           
           if (emotionData.includes('Summary:')) {
             // Format: "Summary: abandoned"
             parsedEmotion = emotionData.split('Summary:')[1]?.trim().toLowerCase() || 'neutral';
             console.log("Parsed emotion from 'Summary:' format:", parsedEmotion);
-          } else if (emotionData.includes(':')) {
-            // Format: "response: abandoned"
+          } else {
+            // If the response doesn't include "Summary:", try direct splitting with ":"
             parsedEmotion = emotionData.split(':')[1]?.trim().toLowerCase() || 'neutral';
             console.log("Parsed emotion from ':' format:", parsedEmotion);
-          } else {
-            // If no clear format, just use the cleaned text
-            parsedEmotion = emotionData.trim().toLowerCase() || 'neutral';
-            console.log("Using raw response as emotion:", parsedEmotion);
           }
 
           // Make sure we have a valid emotion ID by removing any extra spaces or unexpected characters
@@ -409,13 +409,14 @@ export default function App() {
                   const responseText = await emotionResponse.text();
                   console.log("API Response:", responseText);
                   
+                  // Match the same parsing logic used in the main function
                   let emotion = 'neutral';
                   if (responseText.includes('Summary:')) {
                     emotion = responseText.split('Summary:')[1]?.trim().toLowerCase() || 'neutral';
-                  } else if (responseText.includes(':')) {
-                    emotion = responseText.split(':')[1]?.trim().toLowerCase() || 'neutral';
+                    console.log("Parsed test emotion from 'Summary:' format:", emotion);
                   } else {
-                    emotion = responseText.trim().toLowerCase() || 'neutral';
+                    emotion = responseText.split(':')[1]?.trim().toLowerCase() || 'neutral';
+                    console.log("Parsed test emotion from ':' format:", emotion);
                   }
                   
                   // Clean up the emotion string (remove any non-alphanumeric characters)
