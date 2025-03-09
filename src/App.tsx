@@ -3,19 +3,12 @@ import './App.css'
 import { checkEmotionApiHealth, testEmotionApi } from './utils'
 import EmotionWheel from './components/EmotionWheel'
 
-interface EmotionResponse {
-  id: string;
-  summary: string;
-
-// Import the flag to determine if we're using mock API
-import { useState, useEffect, useRef } from 'react'
-import './App.css'
-import { checkEmotionApiHealth, testEmotionApi } from './utils'
-import EmotionWheel from './components/EmotionWheel'
-
 // Flag to indicate we're using mock APIs 
 const USE_MOCK_API = true;
 
+interface EmotionResponse {
+  id: string;
+  summary: string;
 }
 
 export default function App() {
