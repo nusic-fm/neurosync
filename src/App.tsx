@@ -33,14 +33,21 @@ export default function App() {
       }, 50);
       
       // Extract emotions from text
+      console.log("Calling emotion API...");
       const emotionResponse = await fetch('https://emorag-arangodb-py-547962548252.us-central1.run.app/extract-emotions/qa', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query: inputText })
       });
       
+      if (!emotionResponse.ok) {
+        throw new Error(`Emotion API returned ${emotionResponse.status}`);
+      }
+      
       const emotionData = await emotionResponse.text();
+      console.log("Emotion API response:", emotionData);
       const emotionId = emotionData.split(':')[1]?.trim().toLowerCase() || 'neutral';
+      console.log("Extracted emotion ID:", emotionId);
       
       // Simulate processing time to show the wheel spinning
       await new Promise(resolve => setTimeout(resolve, 2000));
@@ -63,6 +70,7 @@ export default function App() {
       setWheelRotation(emotionPositions[emotionId] || Math.random() * 360);
       
       // Generate TTS with the emotion
+      console.log("Calling TTS API...");
       const ttsResponse = await fetch('https://tts-twitter-agent-547962548252.us-central1.run.app/llasa-voice-synthesizer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -72,8 +80,19 @@ export default function App() {
         })
       });
       
+      if (!ttsResponse.ok) {
+        throw new Error(`TTS API returned ${ttsResponse.status}`);
+      }
+      
       const ttsData = await ttsResponse.json();
-      setSpeechUrl(ttsData.url);
+      console.log("TTS API response:", ttsData);
+      
+      if (ttsData.url) {
+        setSpeechUrl(ttsData.url);
+        console.log("Speech URL set to:", ttsData.url);
+      } else {
+        throw new Error("No URL returned from TTS API");
+      }
       
     } catch (error) {
       console.error('Error processing request:', error);
@@ -91,6 +110,8 @@ export default function App() {
   
   useEffect(() => {
     if (speechUrl && audioRef.current) {
+      audioRef.current.src = speechUrl;
+      audioRef.current.load();
       playAudio();
     }
   }, [speechUrl]);
@@ -100,15 +121,16 @@ export default function App() {
       <h1 className="app-title">Emotional Speech Generator</h1>
       
       <div className="wheel-container">
+        <div className="wheel-pointer"></div>
         <div 
           className="emotion-wheel" 
           style={{ transform: `rotate(${wheelRotation}deg)` }}
         >
           <img src={emotionWheel} alt="Wheel of Emotions" />
-          {selectedEmotion && (
-            <div className="emotion-highlight">{selectedEmotion}</div>
-          )}
         </div>
+        {selectedEmotion && (
+          <div className="emotion-highlight">{selectedEmotion}</div>
+        )}
       </div>
       
       <form onSubmit={handleSubmit} className="input-form">

@@ -65,6 +65,20 @@ body {
   height: 100%;
   object-fit: contain;
   border-radius: 50%;
+
+.wheel-pointer {
+  position: absolute;
+  top: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 30px;
+  background-color: var(--highlight-color);
+  clip-path: polygon(50% 100%, 0 0, 100% 0);
+  z-index: 100;
+  filter: drop-shadow(0 0 5px rgba(32, 223, 223, 0.8));
+}
+
 }
 
 .emotion-highlight {
