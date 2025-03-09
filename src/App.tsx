@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import './App.css'
-import emotionWheel from './assets/wheel-of-emotions.webp'
 import { checkEmotionApiHealth, testEmotionApi } from './utils'
+import EmotionWheel from './components/EmotionWheel'
 
 interface EmotionResponse {
   id: string;
@@ -314,18 +314,11 @@ export default function App() {
         </span>
       </div>
 
-      <div className="wheel-container">
-        <div className="wheel-pointer"></div>
-        <div 
-          className="emotion-wheel" 
-          style={{ transform: `rotate(${wheelRotation}deg)` }}
-        >
-          <img src={emotionWheel} alt="Wheel of Emotions" />
-        </div>
-        {selectedEmotion && (
-          <div className="emotion-highlight">{selectedEmotion}</div>
-        )}
-      </div>
+      <EmotionWheel 
+        selectedEmotion={selectedEmotion} 
+        wheelRotation={wheelRotation}
+        isProcessing={isProcessing} 
+      />
 
       <form onSubmit={handleSubmit} className="input-form">
         <input

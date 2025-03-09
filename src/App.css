@@ -81,11 +81,6 @@ body {
   color: white;
 }
 
-.wheel-container {
-  position: relative;
-  width: 400px;
-  height: 400px;
-
 .api-status-button {
   padding: 0.5rem 1rem;
   border-radius: 8px;
@@ -147,56 +142,6 @@ body {
 
 .test-query:hover {
   background-color: #d0d0d0;
-}
-
-  margin: 2rem 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  filter: drop-shadow(0 0 20px rgba(32, 223, 223, 0.5));
-}
-
-.emotion-wheel {
-  width: 100%;
-  height: 100%;
-  transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-  position: relative;
-}
-
-.emotion-wheel img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  border-radius: 50%;
-
-}
-
-.wheel-pointer {
-  position: absolute;
-  top: -15px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 30px;
-  height: 30px;
-  background-color: var(--highlight-color);
-  clip-path: polygon(50% 100%, 0 0, 100% 0);
-  z-index: 100;
-  filter: drop-shadow(0 0 5px rgba(32, 223, 223, 0.8));
-}
-
-.emotion-highlight {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: var(--secondary-color);
-  color: white;
-  padding: 0.5rem 1rem;
-  border-radius: 50px;
-  font-weight: bold;
-  animation: pulse 2s infinite;
-  z-index: 10;
-  box-shadow: 0 0 20px var(--secondary-color);
 }
 
 .input-form {
