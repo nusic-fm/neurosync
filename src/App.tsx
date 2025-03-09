@@ -101,24 +101,24 @@ export default function App() {
 
         let emotionId = 'neutral';
 
+        // Skip health check and directly call the API
+        console.log("Skipping health check, making direct API call");
+
         try {
           console.log("Sending to emotion API:", JSON.stringify({ query: inputText }));
           console.log("Emotion API endpoint: https://emorag-arangodb-py-547962548252.us-central1.run.app/extract-emotions/qa");
-          
+
           const emotionResponse = await fetch('https://emorag-arangodb-py-547962548252.us-central1.run.app/extract-emotions/qa', {
             method: 'POST',
             headers: { 
-              'Content-Type': 'application/json',
-              'Accept': 'text/plain'
+              'Content-Type': 'application/json'
             },
             body: JSON.stringify({ query: inputText }),
             // Adding timeout to prevent long-hanging requests
-            signal: AbortSignal.timeout(30000),
-            // Add mode for CORS
-            mode: 'cors',
-            // Add cache control
-            cache: 'no-cache'
+            signal: AbortSignal.timeout(30000)
           });
+
+          console.log("API response status:", emotionResponse.status);
 
           if (!emotionResponse.ok) {
             const errorText = await emotionResponse.text().catch(() => "No error details available");
@@ -132,7 +132,7 @@ export default function App() {
           // Extract emotion from the response based on the provided example format
           // Expected format: "Summary: abandoned"
           let parsedEmotion = '';
-          
+
           if (emotionData.includes('Summary:')) {
             // Format: "Summary: abandoned"
             parsedEmotion = emotionData.split('Summary:')[1]?.trim().toLowerCase() || 'neutral';
@@ -145,12 +145,12 @@ export default function App() {
 
           // Make sure we have a valid emotion ID by removing any extra spaces or unexpected characters
           emotionId = parsedEmotion.replace(/[^a-z]/g, '');
-          
+
           // If emotion ended up empty, use neutral
           if (!emotionId) {
             emotionId = 'neutral';
           }
-          
+
           console.log("Final extracted emotion ID:", emotionId);
           console.log("Extracted emotion ID:", emotionId);
           setStatusMessage(`Detected emotion: ${emotionId}`);
@@ -363,9 +363,9 @@ export default function App() {
                 setIsProcessing(true);
                 setStatusMessage('Testing emotion API...');
                 setErrorMessage('');
-                
+
                 console.log("Testing emotion API with:", inputText);
-                
+
                 // First check if the API is available
                 try {
                   const healthCheck = await fetch('https://emorag-arangodb-py-547962548252.us-central1.run.app/health', {
@@ -374,17 +374,17 @@ export default function App() {
                     mode: 'cors',
                     cache: 'no-cache'
                   });
-                  
+
                   if (!healthCheck.ok) {
                     throw new Error(`API health check failed with status ${healthCheck.status}`);
                   }
-                  
+
                   console.log("API health check successful, proceeding with test");
                 } catch (healthError: any) {
                   console.error("API health check failed:", healthError);
                   throw new Error("API server appears to be offline. Please try again later.");
                 }
-                
+
                 // Now make the actual API call
                 try {
                   const emotionResponse = await fetch('https://emorag-arangodb-py-547962548252.us-central1.run.app/extract-emotions/qa', {
@@ -399,16 +399,16 @@ export default function App() {
                     cache: 'no-cache',
                     credentials: 'omit'
                   });
-                  
+
                   if (!emotionResponse.ok) {
                     const errorText = await emotionResponse.text().catch(() => "No error details available");
                     console.error("API Error Response:", emotionResponse.status, errorText);
                     throw new Error(`API returned status ${emotionResponse.status}: ${errorText}`);
                   }
-                  
+
                   const responseText = await emotionResponse.text();
                   console.log("API Response:", responseText);
-                  
+
                   // Match the same parsing logic used in the main function
                   let emotion = 'neutral';
                   if (responseText.includes('Summary:')) {
@@ -418,14 +418,14 @@ export default function App() {
                     emotion = responseText.split(':')[1]?.trim().toLowerCase() || 'neutral';
                     console.log("Parsed test emotion from ':' format:", emotion);
                   }
-                  
+
                   // Clean up the emotion string (remove any non-alphanumeric characters)
                   emotion = emotion.replace(/[^a-z]/g, '');
                   if (!emotion) emotion = 'neutral';
-                  
+
                   setSelectedEmotion(emotion);
                   setStatusMessage(`Emotion API test successful! Emotion: ${emotion}`);
-                  
+
                   // Set wheel position
                   const emotionPositions: Record<string, number> = {
                     happy: 180,
@@ -441,12 +441,12 @@ export default function App() {
                   console.error("API Call Error:", apiCallError);
                   throw apiCallError;
                 }
-                
+
               } catch (error: any) {
                 console.error("Emotion API Test Error:", error);
                 setErrorMessage(`Emotion API Test Error: ${error.message}`);
                 setStatusMessage('Emotion API test failed');
-                
+
                 // Reset the wheel and emotion when there's an error
                 setSelectedEmotion(null);
                 setWheelRotation(0);
