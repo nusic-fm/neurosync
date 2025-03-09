@@ -431,22 +431,18 @@ export default function App() {
                   neutral: 225,
                 };
                 setWheelRotation(emotionPositions[emotion] || Math.random() * 360);
-              } catch (apiCallError: any) {
-                console.error("API Call Error:", apiCallError);
-                throw apiCallError;
-              }
-            } catch (error: any) {
-              console.error("Emotion API Test Error:", error);
-              setErrorMessage(`Emotion API Test Error: ${error.message}`);
-              setStatusMessage('Emotion API test failed');
+              } catch (error: any) {
+                console.error("Emotion API Test Error:", error);
+                setErrorMessage(`Emotion API Test Error: ${error.message}`);
+                setStatusMessage('Emotion API test failed');
 
-              // Reset the wheel and emotion when there's an error
-              setSelectedEmotion(null);
-              setWheelRotation(0);
-            } finally {
-              setIsProcessing(false);
-            }
-          }}
+                // Reset the wheel and emotion when there's an error
+                setSelectedEmotion(null);
+                setWheelRotation(0);
+              } finally {
+                setIsProcessing(false);
+              }
+            }}
           >
             Test Emotion API Only
           </button>
