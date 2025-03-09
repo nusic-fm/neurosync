@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import './EmotionWheel.css';
 
@@ -37,9 +36,9 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
   const [activeSecondary, setActiveSecondary] = useState<Secondary | null>(null);
   const [activeTertiary, setActiveTertiary] = useState<Tertiary | null>(null);
   const [animationStage, setAnimationStage] = useState<number>(0);
-  const [neuronNodes, setNeuronNodes] = useState<{x: number, y: number, z: number, color: string}[]>([]);
+  const [neuronNodes, setNeuronNodes] = useState<{x: number, y: number, z: number, color: string, size?: number}[]>([]);
   const [connections, setConnections] = useState<{source: number, target: number, active: boolean}[]>([]);
-  
+
   // Canvas refs
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>(0);
@@ -403,7 +402,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
 
   // Map of emotion names to colors for quick lookup
   const emotionColorMap = new Map<string, string>();
-  
+
   useEffect(() => {
     // Build the emotion color map
     emotionWheel.forEach(primary => {
@@ -493,11 +492,11 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
   // Initialize 3D visualization
   useEffect(() => {
     if (!canvasRef.current) return;
-    
+
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    
+
     // Set canvas size
     const resizeCanvas = () => {
       const container = canvas.parentElement;
@@ -506,15 +505,15 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
         canvas.height = container.clientHeight;
       }
     };
-    
+
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
-    
+
     // Generate neural network nodes
     const generateNodes = () => {
-      const nodes: {x: number, y: number, z: number, color: string}[] = [];
+      const nodes: {x: number, y: number, z: number, color: string, size?: number}[] = [];
       const numPrimaryNodes = emotionWheel.length;
-      
+
       // Primary nodes in center
       emotionWheel.forEach((primary, i) => {
         const angle = (i * Math.PI * 2) / numPrimaryNodes;
@@ -523,10 +522,11 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
           x: Math.cos(angle) * radius + canvas.width / 2,
           y: Math.sin(angle) * radius + canvas.height / 2,
           z: 20,
-          color: primary.color
+          color: primary.color,
+          size: 6
         });
       });
-      
+
       // Secondary nodes in middle layer
       let secondaryCount = 0;
       emotionWheel.forEach((primary, i) => {
@@ -537,12 +537,13 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
             x: Math.cos(angle) * radius + canvas.width / 2,
             y: Math.sin(angle) * radius + canvas.height / 2,
             z: 10,
-            color: secondary.color
+            color: secondary.color,
+            size: 4
           });
           secondaryCount++;
         });
       });
-      
+
       // Tertiary nodes in outer layer
       emotionWheel.forEach((primary, i) => {
         primary.secondaryEmotions.forEach((secondary, j) => {
@@ -555,21 +556,22 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
               x: Math.cos(angle) * radius + canvas.width / 2,
               y: Math.sin(angle) * radius + canvas.height / 2,
               z: 5,
-              color: tertiary.color
+              color: tertiary.color,
+              size: 2
             });
           });
         });
       });
-      
+
       return nodes;
     };
-    
+
     // Generate node connections
     const generateConnections = () => {
       const connections: {source: number, target: number, active: boolean}[] = [];
       const primaryCount = emotionWheel.length;
       let secondaryBaseIndex = primaryCount;
-      
+
       // Connect primary to secondary
       emotionWheel.forEach((primary, i) => {
         primary.secondaryEmotions.forEach((_, j) => {
@@ -581,21 +583,21 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
         });
         secondaryBaseIndex += primary.secondaryEmotions.length;
       });
-      
+
       // Connect secondary to tertiary
       secondaryBaseIndex = primaryCount;
       let tertiaryBaseIndex = secondaryBaseIndex;
-      
+
       emotionWheel.forEach(primary => {
         tertiaryBaseIndex += primary.secondaryEmotions.length;
       });
-      
+
       let currentTertiaryIndex = tertiaryBaseIndex;
-      
+
       emotionWheel.forEach(primary => {
         primary.secondaryEmotions.forEach((secondary, j) => {
           const secondaryIndex = secondaryBaseIndex + j;
-          
+
           secondary.tertiaryEmotions.forEach((_, k) => {
             connections.push({
               source: secondaryIndex,
@@ -603,30 +605,30 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
               active: false
             });
           });
-          
+
           currentTertiaryIndex += secondary.tertiaryEmotions.length;
         });
-        
+
         secondaryBaseIndex += primary.secondaryEmotions.length;
       });
-      
+
       return connections;
     };
-    
+
     const nodes = generateNodes();
     const connections = generateConnections();
-    
+
     setNeuronNodes(nodes);
     setConnections(connections);
-    
+
     // Animation loop
     let time = 0;
     const animate = () => {
       if (!ctx || !canvas) return;
-      
+
       // Clear canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
+
       // Update nodes positions with gentle wave motion
       const updatedNodes = nodes.map((node, i) => {
         const speed = 0.001;
@@ -637,191 +639,182 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
           y: node.y + Math.cos(time * speed + i * 0.5) * amplitude
         };
       });
-      
-      // Draw connections first (behind nodes)
-      connections.forEach(connection => {
-        const source = updatedNodes[connection.source];
-        const target = updatedNodes[connection.target];
-        
-        const intensity = connection.active ? 1 : 0.15;
-        
-        // Calculate distance for line thickness
-        const dx = target.x - source.x;
-        const dy = target.y - source.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        
-        // Draw line
+
+      // Draw connections with enhanced effects
+      connections.forEach(conn => {
+        const source = updatedNodes[conn.source];
+        const target = updatedNodes[conn.target];
+
+        // Calculate midpoint for curved lines
+        const midX = (source.x + target.x) / 2;
+        const midY = (source.y + target.y) / 2 + (Math.sin(time * 0.003) * 10);
+
         ctx.beginPath();
+
+        // Use quadratic curves for more organic look
         ctx.moveTo(source.x, source.y);
-        ctx.lineTo(target.x, target.y);
-        
-        // Gradient line
-        const gradient = ctx.createLinearGradient(source.x, source.y, target.x, target.y);
-        gradient.addColorStop(0, `rgba(${hexToRgb(source.color)}, ${intensity})`);
-        gradient.addColorStop(1, `rgba(${hexToRgb(target.color)}, ${intensity})`);
-        
-        ctx.strokeStyle = gradient;
-        ctx.lineWidth = connection.active ? 2 : 0.5;
-        ctx.stroke();
-        
-        // Optional: Animate data flow along connections
-        if (connection.active) {
-          const particleCount = Math.floor(distance / 30);
-          
-          for (let i = 0; i < particleCount; i++) {
-            const particlePos = (time * 0.005 + i / particleCount) % 1;
-            const particleX = source.x + dx * particlePos;
-            const particleY = source.y + dy * particlePos;
-            
-            // Draw particle
-            ctx.beginPath();
-            ctx.arc(particleX, particleY, 2, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(0, 200, 255, 0.8)';
-            ctx.fill();
+        ctx.quadraticCurveTo(midX, midY, target.x, target.y);
+
+        if (isProcessing) {
+          // More dynamic lines during processing
+          const pulseOpacity = Math.sin(time * 0.01 + conn.source * 0.1) * 0.4 + 0.6;
+          const hue = (time * 0.1 + conn.source * 10) % 360;
+
+          if (conn.active) {
+            // Data flowing effect for active connections during processing
+            const gradient = ctx.createLinearGradient(source.x, source.y, target.x, target.y);
+            gradient.addColorStop(0, `rgba(0, 255, 255, ${pulseOpacity})`);
+            gradient.addColorStop((Math.sin(time * 0.005 + conn.source * 0.1) * 0.5 + 0.5), `rgba(255, 100, 255, ${pulseOpacity})`);
+            gradient.addColorStop(1, `rgba(100, 100, 255, ${pulseOpacity * 0.7})`);
+
+            ctx.strokeStyle = gradient;
+            ctx.lineWidth = 2.5;
+          } else {
+            ctx.strokeStyle = `hsla(${hue}, 80%, 70%, ${pulseOpacity * 0.2})`;
+            ctx.lineWidth = 0.8;
+          }
+        } else {
+          if (conn.active) {
+            ctx.strokeStyle = 'rgba(0, 255, 255, 0.6)';
+            ctx.lineWidth = 2;
+          } else {
+            ctx.strokeStyle = 'rgba(100, 100, 255, 0.1)';
+            ctx.lineWidth = 0.5;
           }
         }
+
+        ctx.stroke();
+
+        // Add data packet animation for active connections during processing
+        if (isProcessing && conn.active) {
+          const packetPos = (time * 0.01 + conn.source * 0.5) % 1;
+          const packetX = source.x + (target.x - source.x) * packetPos;
+          const packetY = source.y + (target.y - source.y) * packetPos;
+
+          ctx.beginPath();
+          ctx.arc(packetX, packetY, 3, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+          ctx.fill();
+        }
       });
-      
-      // Draw nodes
-      updatedNodes.forEach((node, index) => {
-        const sizeMultiplier = node.z / 10;
-        const glowIntensity = isNodeActive(index) ? 0.8 : 0.3;
-        const nodeSize = isNodeActive(index) ? 8 * sizeMultiplier : 4 * sizeMultiplier;
-        
-        // Draw glow
-        const glow = ctx.createRadialGradient(
+
+      // Draw nodes with enhanced effects
+      updatedNodes.forEach((node, i) => {
+        ctx.beginPath();
+
+        // Size adjustment based on processing state
+        const nodeSize = isProcessing 
+          ? (node.size || 1) * (1 + Math.sin(time * 0.005 + i * 0.2) * 0.3) 
+          : (node.size || 1);
+
+        ctx.arc(node.x, node.y, nodeSize * 3, 0, Math.PI * 2);
+
+        // Create gradient fill for more dimension
+        const gradient = ctx.createRadialGradient(
           node.x, node.y, 0,
           node.x, node.y, nodeSize * 3
         );
-        glow.addColorStop(0, `rgba(${hexToRgb(node.color)}, ${glowIntensity})`);
-        glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
-        
-        ctx.beginPath();
-        ctx.arc(node.x, node.y, nodeSize * 3, 0, Math.PI * 2);
-        ctx.fillStyle = glow;
+
+        // More vibrant colors during processing
+        if (isProcessing) {
+          const alpha = 0.7 + Math.sin(time * 0.01 + i) * 0.3;
+          gradient.addColorStop(0, node.color.replace(')', `, ${alpha})`).replace('rgb', 'rgba'));
+          gradient.addColorStop(0.7, node.color.replace(')', ', 0.6)').replace('rgb', 'rgba'));
+          gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+
+          // Add glow effect for nodes during processing
+          ctx.shadowColor = node.color;
+          ctx.shadowBlur = 15;
+        } else {
+          gradient.addColorStop(0, node.color);
+          gradient.addColorStop(0.7, node.color.replace(')', ', 0.6)').replace('rgb', 'rgba'));
+          gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+          ctx.shadowBlur = 0;
+        }
+
+        ctx.fillStyle = gradient;
         ctx.fill();
-        
-        // Draw node
-        ctx.beginPath();
-        ctx.arc(node.x, node.y, nodeSize, 0, Math.PI * 2);
-        ctx.fillStyle = node.color;
-        ctx.fill();
-        
-        // Draw node border
-        ctx.beginPath();
-        ctx.arc(node.x, node.y, nodeSize, 0, Math.PI * 2);
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
-        ctx.lineWidth = 1;
-        ctx.stroke();
+
+        // Reset shadow for next drawing
+        ctx.shadowBlur = 0;
       });
-      
-      // Activate connections based on selected emotion
-      if (activePrimary) {
-        const primaryIndex = emotionWheel.findIndex(p => p.name === activePrimary.name);
-        
-        if (primaryIndex >= 0) {
-          let secondaryStartIndex = emotionWheel.length;
-          let secondaryOffset = 0;
-          
-          for (let i = 0; i < primaryIndex; i++) {
-            secondaryOffset += emotionWheel[i].secondaryEmotions.length;
-          }
-          
-          const activeSecondaryRange = emotionWheel[primaryIndex].secondaryEmotions.length;
-          
-          // Activate primary connections
-          for (let i = 0; i < activeSecondaryRange; i++) {
-            const connectionIndex = connections.findIndex(
-              c => c.source === primaryIndex && c.target === secondaryStartIndex + secondaryOffset + i
-            );
-            
-            if (connectionIndex >= 0) {
-              connections[connectionIndex].active = true;
+
+      // Add electric sparks during processing
+      if (isProcessing && time % 10 === 0) {
+        for (let i = 0; i < 3; i++) {
+          const randomSourceIndex = Math.floor(Math.random() * nodes.length);
+          const randomTargetIndex = Math.floor(Math.random() * nodes.length);
+
+          if (randomSourceIndex !== randomTargetIndex) {
+            const source = updatedNodes[randomSourceIndex];
+            const target = updatedNodes[randomTargetIndex];
+
+            // Draw lightning effect
+            ctx.beginPath();
+            ctx.moveTo(source.x, source.y);
+
+            // Create jagged line for electricity effect
+            const segments = 5;
+            for (let j = 1; j < segments; j++) {
+              const ratio = j / segments;
+              const x = source.x + (target.x - source.x) * ratio;
+              const y = source.y + (target.y - source.y) * ratio;
+              const offset = Math.random() * 20 - 10;
+
+              ctx.lineTo(x + offset, y + offset);
             }
-          }
-          
-          // Activate secondary connections if activeSecondary is set
-          if (activeSecondary) {
-            const secondaryIndex = emotionWheel[primaryIndex].secondaryEmotions
-              .findIndex(s => s.name === activeSecondary.name);
-            
-            if (secondaryIndex >= 0) {
-              let tertiaryStartIndex = emotionWheel.length;
-              emotionWheel.forEach(p => {
-                tertiaryStartIndex += p.secondaryEmotions.length;
-              });
-              
-              let tertiaryOffset = 0;
-              for (let i = 0; i < primaryIndex; i++) {
-                emotionWheel[i].secondaryEmotions.forEach(s => {
-                  tertiaryOffset += s.tertiaryEmotions.length;
-                });
-              }
-              
-              for (let i = 0; i < secondaryIndex; i++) {
-                tertiaryOffset += emotionWheel[primaryIndex].secondaryEmotions[i].tertiaryEmotions.length;
-              }
-              
-              const activeTertiaryRange = emotionWheel[primaryIndex].secondaryEmotions[secondaryIndex].tertiaryEmotions.length;
-              
-              for (let i = 0; i < activeTertiaryRange; i++) {
-                const connectionIndex = connections.findIndex(
-                  c => c.source === secondaryStartIndex + secondaryOffset + secondaryIndex && 
-                      c.target === tertiaryStartIndex + tertiaryOffset + i
-                );
-                
-                if (connectionIndex >= 0) {
-                  connections[connectionIndex].active = true;
-                }
-              }
-            }
+
+            ctx.lineTo(target.x, target.y);
+            ctx.strokeStyle = 'rgba(100, 220, 255, 0.7)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
           }
         }
       }
-      
-      time++;
-      animationRef.current = requestAnimationFrame(animate);
+
+      time += 16;
+      requestAnimationFrame(animate);
     };
-    
+
     // Start animation
     animate();
-    
+
     // Cleanup function
     return () => {
       window.removeEventListener('resize', resizeCanvas);
       cancelAnimationFrame(animationRef.current);
     };
-  }, [activePrimary, activeSecondary, activeTertiary]);
-  
+  }, [activePrimary, activeSecondary, activeTertiary, isProcessing]);
+
   // Helper function to check if a node is active
   const isNodeActive = (index: number) => {
     // Primary nodes
     if (index < emotionWheel.length) {
       return activePrimary && emotionWheel[index].name === activePrimary.name;
     }
-    
+
     // Secondary nodes
     let secondaryCount = 0;
     let secondaryIndex = -1;
     let primaryIndex = -1;
-    
+
     for (let i = 0; i < emotionWheel.length; i++) {
       const primary = emotionWheel[i];
-      
+
       for (let j = 0; j < primary.secondaryEmotions.length; j++) {
         const secondary = primary.secondaryEmotions[j];
         secondaryCount++;
-        
+
         if (secondaryCount + emotionWheel.length - 1 === index) {
           secondaryIndex = j;
           primaryIndex = i;
           break;
         }
       }
-      
+
       if (secondaryIndex !== -1) break;
     }
-    
+
     if (secondaryIndex !== -1 && primaryIndex !== -1) {
       return (
         activePrimary && 
@@ -830,11 +823,11 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
         emotionWheel[primaryIndex].secondaryEmotions[secondaryIndex].name === activeSecondary.name
       );
     }
-    
+
     // Tertiary nodes
     return activeTertiary !== null && activePrimary !== null && activeSecondary !== null;
   };
-  
+
   // Utility function to convert hex to rgb
   const hexToRgb = (hex: string) => {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -849,7 +842,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
         ref={canvasRef} 
         className={`emotion-neural-net ${isProcessing ? 'processing' : ''}`}
       />
-      
+
       {selectedEmotion && (
         <div className="emotion-path-container">
           <div className={`emotion-path ${animationStage > 0 ? 'show' : ''}`}>
@@ -882,7 +875,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
           </div>
         </div>
       )}
-      
+
       {isProcessing && (
         <div className="processing-overlay">
           <div className="processing-spinner"></div>
