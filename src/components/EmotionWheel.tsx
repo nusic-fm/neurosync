@@ -417,13 +417,31 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
   }, []);
 
   // Find the matching emotion in the wheel structure
+  const [processingEmotion, setProcessingEmotion] = useState<string | null>(null);
+
   useEffect(() => {
     // Reset animation stage when emotion changes
     setAnimationStage(0);
     setActivePrimary(null);
     setActiveSecondary(null);
     setActiveTertiary(null);
-
+    
+    // When processing starts, set a sequence of emotions being checked
+    if (isProcessing && processingStage === "emotion") {
+      const emotionSequence = ["joy", "love", "anger", "sadness", "fear", "surprise"];
+      let currentIndex = 0;
+      
+      const interval = setInterval(() => {
+        setProcessingEmotion(emotionSequence[currentIndex]);
+        currentIndex = (currentIndex + 1) % emotionSequence.length;
+      }, 800);
+      
+      return () => {
+        clearInterval(interval);
+        setProcessingEmotion(null);
+      };
+    }
+    
     if (!selectedEmotion) return;
 
     // Find the closest matching emotions
@@ -880,6 +898,16 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
         <div className="processing-overlay">
           <div className="processing-spinner"></div>
           <div className="processing-text">Analyzing emotional patterns...</div>
+          {processingStage === "emotion" && (
+            <div className="emotion-detection-status">
+              <span className="pulse-dot"></span>
+              <span>
+                {processingEmotion 
+                  ? `Analyzing: ${processingEmotion}` 
+                  : "Identifying primary emotion..."}
+              </span>
+            </div>
+          )}
         </div>
       )}
     </div>
