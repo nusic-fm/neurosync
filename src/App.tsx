@@ -319,12 +319,12 @@ export default function App() {
 
   return (
     <main className="app-container">
-      {/* Add scanline effect for cyberpunk feel */}
+      {/* Subtle scanline effect */}
       <div className="scanline"></div>
       
-      <h1 className="app-title">NEURO<span style={{color: '#FF00FF'}}>SYNC</span> v2.0</h1>
-      <h2 style={{fontSize: '1.2rem', textTransform: 'uppercase', letterSpacing: '3px', marginTop: '-1rem', marginBottom: '1.5rem', color: '#00eeff', textAlign: 'center'}}>
-        Emotion Recognition System
+      <h1 className="app-title">NEURO<span>SYNC</span> 3.0</h1>
+      <h2 style={{fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '2px', marginTop: '-0.5rem', marginBottom: '1.5rem', opacity: 0.8, textAlign: 'center', fontFamily: "'Space Mono', monospace"}}>
+        Advanced Emotion Recognition System
       </h2>
 
       <div className="api-status">

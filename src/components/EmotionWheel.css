@@ -1,11 +1,15 @@
+@keyframes pulse-ring {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.5; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
 
 .emotion-wheel-container {
+  width: 380px;
+  height: 380px;
   position: relative;
-  width: 400px;
-  height: 400px;
-  margin: 2rem auto;
+  margin: 1rem auto;
   display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
   overflow: visible;
@@ -47,10 +51,6 @@
   height: 100%;
   border-radius: 50%;
   transition: transform 2s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-  box-shadow: 
-    0 0 20px rgba(11, 255, 126, 0.5),
-    0 0 40px rgba(11, 255, 126, 0.3),
-    inset 0 0 20px rgba(0, 238, 255, 0.3);
   overflow: visible;
   background: 
     radial-gradient(circle at center, rgba(11, 20, 38, 0.8) 0%, rgba(11, 20, 38, 0.7) 70%),
@@ -104,88 +104,34 @@
   100% { transform: rotate(var(--rotation)) scale(1); }
 }
 
-.wheel-center {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 60px;
-  height: 60px;
-  background-color: rgba(11, 20, 38, 0.8);
-  border: 2px solid rgba(11, 255, 126, 0.8);
-  border-radius: 50%;
-  z-index: 10;
-  box-shadow: 
-    0 0 10px rgba(11, 255, 126, 0.5),
-    0 0 20px rgba(11, 255, 126, 0.3),
-    inset 0 0 10px rgba(0, 238, 255, 0.3);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.wheel-center::before {
-  content: "";
-  position: absolute;
-  width: 70%;
-  height: 70%;
-  border-radius: 50%;
-  border: 2px solid rgba(0, 238, 255, 0.8);
-  box-shadow: 0 0 10px rgba(0, 238, 255, 0.5);
-}
-
-.wheel-center::after {
-  content: "";
-  position: absolute;
-  width: 20%;
-  height: 20%;
-  border-radius: 50%;
-  background-color: rgb(255, 0, 255);
-  box-shadow: 0 0 10px rgba(255, 0, 255, 0.8);
-}
-
-.pulse-ring {
-  position: absolute;
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  background-color: transparent;
-  border: 2px solid rgba(11, 255, 126, 0.8);
-  box-shadow: 0 0 10px rgba(11, 255, 126, 0.5);
-  animation: pulse-ring 1.5s ease-out infinite;
-}
-
-@keyframes pulse-ring {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.5); opacity: 0.5; }
-  100% { transform: scale(2); opacity: 0; }
-}
-
 .primary-wheel {
   position: absolute;
   width: 100%;
   height: 100%;
   border-radius: 50%;
   overflow: hidden;
-  background-color: rgba(11, 20, 38, 0.5);
-  border: 1px solid rgba(0, 238, 255, 0.3);
+  background-color: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
 }
 
 .secondary-wheel {
   position: absolute;
-  width: 80%;
-  height: 80%;
-  top: 10%;
-  left: 10%;
+  width: 75%;
+  height: 75%;
+  top: 12.5%;
+  left: 12.5%;
   border-radius: 50%;
   z-index: 5;
   opacity: 0;
   transform: scale(0.8);
   transition: opacity 0.5s ease, transform 0.5s ease;
   overflow: hidden;
-  background-color: rgba(11, 20, 38, 0.6);
-  border: 1px solid rgba(255, 0, 255, a.3);
-  box-shadow: 0 0 15px rgba(255, 0, 255, 0.3);
+  background-color: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(255, 0, 204, 0.3);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
 }
 
 .secondary-wheel.active {
@@ -195,24 +141,62 @@
 
 .tertiary-wheel {
   position: absolute;
-  width: 60%;
-  height: 60%;
-  top: 20%;
-  left: 20%;
+  width: 50%;
+  height: 50%;
+  top: 25%;
+  left: 25%;
   border-radius: 50%;
   z-index: 6;
   opacity: 0;
   transform: scale(0.8);
   transition: opacity 0.5s ease, transform 0.5s ease;
   overflow: hidden;
-  background-color: rgba(11, 20, 38, 0.7);
-  border: 1px solid rgba(11, 255, 126, 0.3);
-  box-shadow: 0 0 15px rgba(11, 255, 126, 0.3);
+  background-color: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(121, 40, 202, 0.3);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
 }
 
 .tertiary-wheel.active {
   opacity: 1;
   transform: scale(1);
+}
+
+.wheel-center {
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  background-color: rgba(15, 23, 42, 0.9);
+  border-radius: 50%;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
+}
+
+.wheel-center::after {
+  content: "";
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  border-radius: 50%;
+  animation: pulse 2s infinite alternate;
+}
+
+.pulse-ring {
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px solid var(--primary-color);
+  opacity: 0;
+  z-index: 9;
+}
+
+.pulse-ring.active {
+  animation: pulse-ring 2s ease-out infinite;
 }
 
 .emotion-slice {
@@ -229,33 +213,30 @@
 .emotion-slice.active {
   opacity: 1;
   z-index: 5;
-  filter: brightness(1.5) drop-shadow(0 0 5px currentColor);
+  filter: brightness(1.3);
 }
 
 .emotion-label {
   position: absolute;
-  font-size: 0.85rem;
+  font-size: 0.7rem;
   color: white;
   font-weight: 500;
   text-align: center;
   left: 50%;
   top: 25%;
   transform-origin: center;
-  text-shadow: 0 0 5px currentColor;
   pointer-events: none;
   width: 100px;
   margin-left: -50px;
   display: block;
   text-transform: uppercase;
   letter-spacing: 1px;
+  font-family: 'Space Mono', monospace;
 }
 
 .emotion-label.active {
   font-weight: bold;
-  text-shadow: 
-    0 0 5px currentColor,
-    0 0 10px currentColor;
-  animation: glitch-text 2s infinite;
+  color: var(--primary-color);
 }
 
 .emotion-path-container {
@@ -264,20 +245,20 @@
   display: flex;
   justify-content: center;
   position: absolute;
-  bottom: -80px;
+  bottom: -60px;
 }
 
 .emotion-path {
   display: flex;
   align-items: center;
-  background-color: rgba(11, 20, 38, 0.8);
+  background-color: rgba(15, 23, 42, 0.8);
   padding: 0.7rem 1rem;
   border-radius: 2px;
-  border: 1px solid rgba(11, 255, 126, 0.5);
   opacity: 0;
   transform: translateY(20px);
   transition: opacity 0.5s ease, transform 0.5s ease;
-  box-shadow: 0 0 15px rgba(11, 255, 126, 0.3);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+  border-top: 2px solid var(--primary-color);
 }
 
 .emotion-path.show {
@@ -288,42 +269,23 @@
 .path-step {
   display: flex;
   align-items: center;
-  padding: 3px 10px;
+  padding: 3px 8px;
   border-radius: 2px;
-  font-size: 0.85rem;
+  font-size: 0.7rem;
   color: white;
   margin: 0 2px;
   text-transform: uppercase;
   letter-spacing: 1px;
+  font-family: 'Space Mono', monospace;
 }
 
 .path-step span {
   margin-left: 5px;
 }
 
-.path-step.primary {
-  background-color: rgba(11, 255, 126, 0.2);
-  border: 1px solid rgba(11, 255, 126, 0.5);
-  animation: highlight-path 1s ease 0.5s forwards;
-}
-
-.path-step.secondary {
-  background-color: rgba(0, 238, 255, 0.2);
-  border: 1px solid rgba(0, 238, 255, 0.5);
-  opacity: 0.7;
-  animation: highlight-path 1s ease 1.5s forwards;
-}
-
-.path-step.tertiary {
-  background-color: rgba(255, 0, 255, 0.2);
-  border: 1px solid rgba(255, 0, 255, 0.5);
-  opacity: 0.7;
-  animation: highlight-path 1s ease 2.5s forwards;
-}
-
-@keyframes highlight-path {
-  0% { background-color: rgba(255, 255, 255, 0.1); opacity: 0.7; }
-  100% { background-color: rgba(255, 255, 255, 0.2); opacity: 1; }
+.path-arrow {
+  color: var(--primary-color);
+  margin: 0 5px;
 }
 
 .color-dot {
@@ -369,13 +331,13 @@
 
 @keyframes glitch-text {
   0%, 100% { 
-    text-shadow: 0 0 5px currentColor, 0 0 10px currentColor; 
+    text-shadow: 0 0 2px currentColor; 
   }
   33% { 
-    text-shadow: 2px 0 5px rgba(11, 255, 126, 0.8), -2px 0 5px rgba(255, 0, 255, 0.8); 
+    text-shadow: 1px 0 1px rgba(0, 240, 255, 0.8), -1px 0 1px rgba(255, 0, 204, 0.8); 
   }
   66% { 
-    text-shadow: -2px 0 5px rgba(0, 238, 255, 0.8), 2px 0 5px rgba(11, 255, 126, 0.8); 
+    text-shadow: -1px 0 1px rgba(0, 240, 255, 0.8), 1px 0 1px rgba(121, 40, 202, 0.8); 
   }
 }
 
@@ -384,16 +346,16 @@
     width: 320px;
     height: 320px;
   }
-  
+
   .emotion-label {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
   }
-  
+
   .emotion-path {
     flex-direction: column;
     padding: 0.5rem;
   }
-  
+
   .path-arrow {
     transform: rotate(90deg);
     margin: 5px 0;
@@ -405,16 +367,16 @@
     width: 280px;
     height: 280px;
   }
-  
+
   .emotion-label {
     font-size: 0.6rem;
   }
-  
+
   .wheel-center {
     width: 40px;
     height: 40px;
   }
-  
+
   .pulse-ring {
     width: 40px;
     height: 40px;
