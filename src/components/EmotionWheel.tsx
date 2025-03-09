@@ -427,7 +427,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
     setActiveTertiary(null);
     
     // When processing starts, set a sequence of emotions being checked
-    if (isProcessing && processingStage === "emotion") {
+    if (isProcessing) {
       const emotionSequence = ["joy", "love", "anger", "sadness", "fear", "surprise"];
       let currentIndex = 0;
       
@@ -898,16 +898,14 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
         <div className="processing-overlay">
           <div className="processing-spinner"></div>
           <div className="processing-text">Analyzing emotional patterns...</div>
-          {processingStage === "emotion" && (
-            <div className="emotion-detection-status">
-              <span className="pulse-dot"></span>
-              <span>
-                {processingEmotion 
-                  ? `Analyzing: ${processingEmotion}` 
-                  : "Identifying primary emotion..."}
-              </span>
-            </div>
-          )}
+          <div className="emotion-detection-status">
+            <span className="pulse-dot"></span>
+            <span>
+              {processingEmotion 
+                ? `Analyzing: ${processingEmotion}` 
+                : "Identifying primary emotion..."}
+            </span>
+          </div>
         </div>
       )}
     </div>
