@@ -358,13 +358,20 @@ export default function App() {
         isProcessing={isProcessing}
         processingStage={processingStage}
       />
-      
+
       {isProcessing && (
         <div className="processing-status">
           <div className="processing-pulse"></div>
-          <span>Processing: {processingStage === "emotion" ? "Analyzing Emotions" : 
-                             processingStage === "speech" ? "Generating Speech" : 
-                             processingStage === "initializing" ? "Initializing" : "Processing"}</span>
+          <span>
+            Processing:{" "}
+            {processingStage === "emotion"
+              ? "Analyzing Emotions"
+              : processingStage === "speech"
+                ? "Generating Speech"
+                : processingStage === "initializing"
+                  ? "Initializing"
+                  : "Processing"}
+          </span>
         </div>
       )}
 
@@ -382,9 +389,9 @@ export default function App() {
           <span>Quick Test Queries: </span>
           <span
             className="test-query"
-            onClick={() => setInputText("I'm in the town, lets roam around")}
+            onClick={() => setInputText("I'm so pissed off with him")}
           >
-            "I'm in the town, lets roam around"
+            "I'm so pissed off with him"
           </span>
           <span
             className="test-query"
@@ -711,7 +718,7 @@ export default function App() {
 
                   // Try a direct fetch with detailed logging
                   const testPayload = {
-                    query: "I'm in the town, lets roam around",
+                    query: "I'm so pissed off with him",
                   };
 
                   console.log("Test payload:", JSON.stringify(testPayload));
