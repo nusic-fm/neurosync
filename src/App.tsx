@@ -436,9 +436,9 @@ export default function App() {
                 throw apiCallError;
               }
             } catch (error: any) {
-                console.error("Emotion API Test Error:", error);
-                setErrorMessage(`Emotion API Test Error: ${error.message}`);
-                setStatusMessage('Emotion API test failed');
+              console.error("Emotion API Test Error:", error);
+              setErrorMessage(`Emotion API Test Error: ${error.message}`);
+              setStatusMessage('Emotion API test failed');
 
                 // Reset the wheel and emotion when there's an error
                 setSelectedEmotion(null);
