@@ -3,6 +3,7 @@
 import { mockApiHealth, mockEmotionApi } from './mockApi';
 
 // Flag to control whether we use the real API or mock
+// Setting to true since the real API is not responding
 const USE_MOCK_API = true;
 
 /**

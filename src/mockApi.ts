@@ -36,12 +36,17 @@ export const mockEmotionAnalysis = (text: string): string => {
 
 // Mock API health check function
 export const mockApiHealth = async (): Promise<boolean> => {
+  console.log("Running mock API health check");
   // Simulate network delay
   await new Promise(resolve => setTimeout(resolve, 500));
+  // Always return true for mock API
   return true;
 };
 
 // Mock the emotion API
+// Export mockEmotionAnalysis directly so it can be imported in App.tsx
+export { mockEmotionAnalysis };
+
 export const mockEmotionApi = async (query: string): Promise<{
   success: boolean;
   status?: number;
@@ -82,7 +87,15 @@ export const mockSpeechSynthesis = async (text: string): Promise<string> => {
   // Simulate network delay
   await new Promise(resolve => setTimeout(resolve, 1500));
   
-  // Return a fixed audio URL for testing
-  // This is a sample URL that would be replaced with an actual audio file in a real implementation
-  return 'https://ia800504.us.archive.org/15/items/LibrivoxM4bCollectionAudiobooks/the_sign_of_the_four.m4b';
+  // Return one of several sample audio URLs based on the text content
+  const audioSamples = [
+    'https://audio-samples.github.io/samples/mp3/blizzard_promo.mp3',
+    'https://audio-samples.github.io/samples/mp3/blizzard_bigsplash.mp3',
+    'https://audio-samples.github.io/samples/mp3/blizzard_fibonaccismith.mp3',
+    'https://audio-samples.github.io/samples/mp3/blizzard_chant1.mp3'
+  ];
+  
+  // Pick a sample based on the first character of the text
+  const sampleIndex = text.charCodeAt(0) % audioSamples.length;
+  return audioSamples[sampleIndex];
 };
