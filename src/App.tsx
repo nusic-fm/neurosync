@@ -359,7 +359,6 @@ export default function App() {
         processingStage={processingStage}
       />
 
-
       <form onSubmit={handleSubmit} className="input-form">
         <input
           type="text"
@@ -629,11 +628,6 @@ export default function App() {
                         Origin: window.location.origin,
                       },
                       body: JSON.stringify(testPayload),
-                      mode: "cors",
-                      cache: "no-cache",
-                      credentials: "omit",
-                      redirect: "follow",
-                      signal: AbortSignal.timeout(20000),
                     },
                   ).catch((e) => {
                     console.error("Manual test fetch error:", e);
