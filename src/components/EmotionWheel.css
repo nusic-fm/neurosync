@@ -1,117 +1,67 @@
-
+/* Neural Network Emotion Visualization */
 .emotion-visualization-container {
   position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  max-width: 500px;
-  height: 350px;
-  margin: 0 auto;
-  border-radius: 16px;
-  background-color: rgba(10, 15, 25, 0.2);
-  backdrop-filter: blur(5px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  overflow: hidden;
-  padding: 20px;
+  width: 400px;
+  height: 400px;
+  margin: 0 auto 40px;
+  filter: drop-shadow(0 0 15px rgba(0, 200, 255, 0.3));
+  perspective: 1000px;
 }
 
-/* Simplified wheel */
-.simplified-wheel {
-  position: relative;
+.emotion-neural-net {
   width: 100%;
   height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.emotion-segment {
-  position: absolute;
-  width: 16px;
-  height: 16px;
+  background-color: rgba(10, 10, 14, 0.5);
   border-radius: 50%;
-  transform-origin: center center;
-  transition: all 0.5s ease;
-  z-index: 2;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  box-shadow: 
+    0 0 0 1px rgba(0, 200, 255, 0.2),
+    0 0 20px rgba(0, 200, 255, 0.4) inset;
+  transform-style: preserve-3d;
+  transition: transform 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  overflow: hidden;
 }
 
-.emotion-segment.primary {
-  width: 20px;
-  height: 20px;
-}
-
-.emotion-segment.secondary {
-  width: 14px;
-  height: 14px;
-}
-
-.emotion-segment.tertiary {
-  width: 10px;
-  height: 10px;
-}
-
-.emotion-segment.active {
-  width: 28px;
-  height: 28px;
-  z-index: 10;
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
-  animation: pulse 1.5s infinite;
-}
-
-@keyframes pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
-  }
-  70% {
-    box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
-  }
-}
-
-/* Tooltip styling */
-.emotion-tooltip {
+.emotion-neural-net::before {
+  content: '';
   position: absolute;
-  background-color: rgba(0, 0, 0, 0.8);
-  color: white;
-  padding: 8px 12px;
-  border-radius: 6px;
-  font-size: 14px;
-  z-index: 100;
-  pointer-events: none;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-  backdrop-filter: blur(3px);
-  white-space: nowrap;
-  top: -5px;
-  left: 50%;
-  transform: translate(-50%, -100%);
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 0.2s, visibility 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  width: 150%;
+  height: 150%;
+  top: -25%;
+  left: -25%;
+  background: 
+    radial-gradient(circle at center, transparent 30%, rgba(0, 200, 255, 0.03) 70%),
+    linear-gradient(45deg, transparent 49%, rgba(0, 200, 255, 0.05) 50%, transparent 51%);
+  background-size: 100% 100%, 10px 10px;
+  animation: rotate-background 120s linear infinite;
 }
 
-.emotion-tooltip .emotion-emoji {
-  font-size: 18px;
-  margin-right: 4px;
+@keyframes rotate-background {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
-.emotion-segment:hover .emotion-tooltip,
-.emotion-segment.active .emotion-tooltip {
-  opacity: 1;
-  visibility: visible;
+.emotion-neural-net.processing {
+  animation: pulse-glow 1.2s infinite alternate, processing-animation 4s infinite;
 }
 
-/* Emotion Path Styling */
+@keyframes pulse-glow {
+  0% { box-shadow: 0 0 20px rgba(0, 200, 255, 0.4) inset, 0 0 5px rgba(0, 200, 255, 0.5); }
+  50% { box-shadow: 0 0 35px rgba(255, 100, 255, 0.6) inset, 0 0 20px rgba(255, 100, 255, 0.7); }
+  100% { box-shadow: 0 0 30px rgba(0, 200, 255, 0.7) inset, 0 0 15px rgba(0, 200, 255, 0.8); }
+}
+
+@keyframes processing-animation {
+  0% { filter: hue-rotate(0deg) brightness(1); }
+  25% { filter: hue-rotate(45deg) brightness(1.2); }
+  50% { filter: hue-rotate(90deg) brightness(1); }
+  75% { filter: hue-rotate(45deg) brightness(1.2); }
+  100% { filter: hue-rotate(0deg) brightness(1); }
+}
+
 .emotion-path-container {
   position: absolute;
-  bottom: 10px;
+  bottom: -40px;
   left: 0;
   width: 100%;
   display: flex;
@@ -119,83 +69,70 @@
 }
 
 .emotion-path {
-  background-color: rgba(0, 0, 0, 0.2);
-  padding: 15px;
-  border-radius: 8px;
-  width: 90%;
-  margin: 0 auto;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  backdrop-filter: blur(5px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  background: rgba(10, 15, 30, 0.7);
+  border-radius: 15px;
+  padding: 5px 15px;
+  box-shadow: 
+    0 0 0 1px rgba(0, 200, 255, 0.2),
+    0 0 10px rgba(0, 200, 255, 0.3);
+  transition: all 0.5s ease;
   opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.5s, transform 0.5s;
+  transform: translateY(10px);
+  backdrop-filter: blur(5px);
 }
 
 .emotion-path.show {
   opacity: 1;
   transform: translateY(0);
+  animation: pulse-border 2s infinite alternate;
 }
 
-.path-title {
-  font-weight: bold;
-  margin-bottom: 10px;
-  color: #fff;
-  font-size: 1.1rem;
-  text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.path-steps {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
+@keyframes pulse-border {
+  0% { box-shadow: 0 0 0 1px rgba(0, 200, 255, 0.2), 0 0 10px rgba(0, 200, 255, 0.3); }
+  100% { box-shadow: 0 0 0 1px rgba(0, 200, 255, 0.3), 0 0 15px rgba(0, 200, 255, 0.5); }
 }
 
 .path-step {
   display: flex;
   align-items: center;
-  padding: 8px 14px;
-  border-radius: 20px;
-  margin: 5px;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.path-step:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  margin: 0 2px;
+  font-size: 0.75rem;
+  color: rgba(220, 220, 255, 0.9);
+  text-shadow: 0 0 5px rgba(0, 200, 255, 0.5);
+  font-family: 'Space Mono', monospace;
+  letter-spacing: 0.5px;
 }
 
 .color-dot {
-  width: 15px;
-  height: 15px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
-  margin-right: 8px;
-  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+  margin-right: 5px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+.color-dot::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.8);
 }
 
 .path-arrow {
   margin: 0 5px;
-  color: #fff;
-  font-size: 1.2rem;
+  color: rgba(0, 200, 255, 0.7);
+  font-size: 1rem;
+  text-shadow: 0 0 8px rgba(0, 200, 255, 0.8);
 }
 
-.primary {
-  background-color: rgba(0, 0, 0, 0.25);
-  font-weight: 600;
-}
-
-.secondary {
-  background-color: rgba(0, 0, 0, 0.2);
-}
-
-.tertiary {
-  background-color: rgba(0, 0, 0, 0.15);
-}
-
-/* Processing overlay */
 .processing-overlay {
   position: absolute;
   top: 0;
@@ -207,35 +144,59 @@
   justify-content: center;
   align-items: center;
   background-color: rgba(10, 15, 25, 0.7);
+  border-radius: 50%;
   backdrop-filter: blur(3px);
-  z-index: 100;
+  z-index: 10;
 }
 
 .processing-spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid rgba(0, 200, 255, 0.3);
-  border-radius: 50%;
+  border: 3px solid transparent;
   border-top-color: rgba(0, 200, 255, 0.8);
+  border-right-color: rgba(0, 200, 255, 0.6);
+  border-bottom-color: rgba(0, 200, 255, 0.4);
+  border-radius: 50%;
   animation: spin 1s linear infinite;
-  margin-bottom: 20px;
+  box-shadow: 0 0 15px rgba(0, 200, 255, 0.3);
 }
 
 .processing-text {
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 14px;
+  margin-top: 15px;
+  color: rgba(0, 200, 255, 0.9);
+  font-size: 0.8rem;
+  text-transform: uppercase;
   letter-spacing: 1px;
+  text-shadow: 0 0 10px rgba(0, 200, 255, 0.7);
+  font-family: 'Space Mono', monospace;
 }
 
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Media Queries */
+@media (max-width: 768px) {
+  .emotion-visualization-container {
+    width: 320px;
+    height: 320px;
+  }
+
+  .emotion-path {
+    flex-direction: column;
+    padding: 0.5rem;
+  }
+
+  .path-arrow {
+    transform: rotate(90deg);
+    margin: 5px 0;
   }
 }
 
-/* Make it responsive */
-@media (max-width: 600px) {
+@media (max-width: 480px) {
   .emotion-visualization-container {
+    width: 280px;
     height: 280px;
   }
 }
