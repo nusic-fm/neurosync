@@ -38,6 +38,8 @@ interface Node {
   id: number; // Added id property
 }
 
+type Connection = { source: number, target: number, active: boolean };
+
 const EmotionWheel: React.FC<EmotionWheelProps> = ({ 
   selectedEmotion, 
   wheelRotation, 
@@ -49,7 +51,8 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
   const [activeTertiary, setActiveTertiary] = useState<Tertiary | null>(null);
   const [animationStage, setAnimationStage] = useState<number>(0);
   const [neuronNodes, setNeuronNodes] = useState<Node[]>([]);
-  const [connections, setConnections] = useState<{ source: number, target: number, active: boolean }[]>([]);
+  const [connections, setConnections] = useState<Connection[]>([]);
+  const [highlightedConnections, setHighlightedConnections] = useState<number[]>([]); // Added highlightedConnections state
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>(0);
   const [hoveredNode, setHoveredNode] = useState<Node | null>(null);
@@ -585,7 +588,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
     };
 
     const generateConnections = () => {
-      const connections: {source: number, target: number, active: boolean}[] = [];
+      const connections: Connection[] = [];
       const primaryCount = emotionWheel.length;
       let secondaryBaseIndex = primaryCount;
 
@@ -653,7 +656,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
       });
 
       const drawConnections = () => {
-        connections.forEach(conn => {
+        connections.forEach((conn, index) => {
           const source = updatedNodes[conn.source];
           const target = updatedNodes[conn.target];
 
@@ -664,11 +667,13 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
           ctx.moveTo(source.x, source.y);
           ctx.quadraticCurveTo(midX, midY, target.x, target.y);
 
+          const isHighlighted = highlightedConnections.includes(index); // Check for highlighted connection
+
           if (isProcessing) {
             const pulseOpacity = Math.sin(time * 0.01 + conn.source * 0.1) * 0.4 + 0.6;
             const hue = (time * 0.1 + conn.source * 10) % 360;
 
-            if (conn.active) {
+            if (conn.active || isHighlighted) { // Highlight active or hovered connections
               const gradient = ctx.createLinearGradient(source.x, source.y, target.x, target.y);
               gradient.addColorStop(0, `rgba(0, 255, 255, ${pulseOpacity})`);
               gradient.addColorStop((Math.sin(time * 0.005 + conn.source * 0.1) * 0.5 + 0.5), `rgba(255, 100, 255, ${pulseOpacity})`);
@@ -681,7 +686,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
               ctx.lineWidth = 0.8;
             }
           } else {
-            if (conn.active) {
+            if (conn.active || isHighlighted) { // Highlight active or hovered connections
               ctx.strokeStyle = 'rgba(0, 255, 255, 0.6)';
               ctx.lineWidth = 2;
             } else {
@@ -799,6 +804,19 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
           return distance < (node.size || 1) * 3;
         });
         setHoveredNode(foundNode);
+
+        // Update highlighted connections
+        if (foundNode) {
+          const relatedConnections = connections.reduce((acc, conn, index) => {
+            if (conn.source === foundNode.index || conn.target === foundNode.index) {
+              acc.push(index);
+            }
+            return acc;
+          }, [] as number[]);
+          setHighlightedConnections(relatedConnections);
+        } else {
+          setHighlightedConnections([]);
+        }
       }
     };
 
@@ -810,7 +828,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
       cancelAnimationFrame(animationRef.current);
       canvas.removeEventListener('mousemove', handleMouseMove);
     };
-  }, [activePrimary, activeSecondary, activeTertiary, isProcessing, neuronNodes, connections]);
+  }, [activePrimary, activeSecondary, activeTertiary, isProcessing, neuronNodes, connections, hoveredNode]);
 
 
   const isNodeActive = (index: number) => {
@@ -886,7 +904,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
       case "proud": return "👍";
       case "content": return "😌";
       case "playful": return "😜";
-      case "interested": return "🤔";
+      case "interested": return"🤔";
       case "accepted": return "🤝";
       case "peaceful": return "☮️";
       case "amazed": return "🤯";

@@ -250,39 +250,85 @@
   }
 }
 
-/* Added Tooltip Styles */
+/* Tooltip Styles */
 .emotion-tooltip {
   position: absolute;
-  background-color: rgba(0, 0, 0, 0.8);
+  background-color: rgba(0, 0, 0, 0.85);
   color: white;
-  padding: 8px 12px;
-  border-radius: 6px;
+  padding: 10px 14px;
+  border-radius: 8px;
   font-size: 14px;
   z-index: 100;
   pointer-events: none;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2), 0 0 20px rgba(0, 200, 255, 0.3);
-  backdrop-filter: blur(3px);
+  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 200, 255, 0.2);
+  backdrop-filter: blur(5px);
   white-space: nowrap;
+  top: -5px;
+  left: 50%;
   transform: translate(-50%, -100%);
-  margin-top: -15px;
-  transition: opacity 0.2s, visibility 0.2s;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, visibility 0.2s, transform 0.2s;
   display: flex;
   align-items: center;
-  gap: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  animation: tooltip-glow 1.5s infinite alternate;
+  gap: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  min-width: 120px;
+  justify-content: center;
+  letter-spacing: 0.5px;
+  text-transform: capitalize;
+  font-weight: 500;
+}
+
+/* Add subtle glow effect to tooltip when visible */
+.emotion-tooltip[style*="opacity: 1"] {
+  animation: tooltip-glow 2s infinite alternate;
 }
 
 @keyframes tooltip-glow {
-  0% { box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2), 0 0 10px rgba(0, 200, 255, 0.3); }
-  100% { box-shadow: 0 3px 15px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 200, 255, 0.5); }
+  0% {
+    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 200, 255, 0.2);
+  }
+  100% {
+    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.3), 0 0 25px rgba(0, 200, 255, 0.4);
+  }
 }
 
 .emotion-tooltip .emotion-emoji {
-  font-size: 18px;
-  margin-right: 4px;
+  font-size: 20px;
+  margin-right: 6px;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.4);
+  animation: emoji-pulse 1.5s infinite alternate;
 }
 
+@keyframes emoji-pulse {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.2); }
+}
+
+.emotion-tooltip::after {
+  content: 'Showing connections';
+  display: block;
+  font-size: 10px;
+  opacity: 0.7;
+  margin-top: 5px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: normal;
+}
+
+.emotion-segment:hover .emotion-tooltip { /*Assumed class selector*/
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, -110%);
+}
+
+/* Connection highlight effect */
+@keyframes connection-pulse {
+  0% { stroke-opacity: 0.6; stroke-width: 1px; }
+  50% { stroke-opacity: 0.9; stroke-width: 2px; }
+  100% { stroke-opacity: 0.6; stroke-width: 1px; }
+}
 
 /*Improved Emotion Path Styling*/
 .emotion-path {
