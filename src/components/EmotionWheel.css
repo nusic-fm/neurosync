@@ -253,31 +253,25 @@
 /* Tooltip Styles */
 .emotion-tooltip {
   position: absolute;
-  background-color: rgba(0, 0, 0, 0.85);
+  background-color: rgba(0, 0, 0, 0.8);
   color: white;
-  padding: 10px 14px;
-  border-radius: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
   font-size: 14px;
   z-index: 100;
   pointer-events: none;
-  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 200, 255, 0.2);
-  backdrop-filter: blur(5px);
-  white-space: nowrap;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2); /* Reduced shadow complexity */
   top: -5px;
   left: 50%;
   transform: translate(-50%, -100%);
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.2s, visibility 0.2s, transform 0.2s;
+  transition: opacity 0.15s, visibility 0.15s; /* Slightly faster transition */
   display: flex;
   align-items: center;
-  gap: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  min-width: 120px;
-  justify-content: center;
-  letter-spacing: 0.5px;
-  text-transform: capitalize;
-  font-weight: 500;
+  gap: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  will-change: opacity; /* Hint for browser optimization */
 }
 
 /* Add subtle glow effect to tooltip when visible */
