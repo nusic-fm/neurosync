@@ -1,13 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import './EmotionWheel.css';
 
-interface EmotionWheelProps {
-  selectedEmotion: string | null;
-  wheelRotation: number;
-  isProcessing: boolean;
-}
-
-// Emotion data structure
 interface Tertiary {
   name: string;
   color: string;
@@ -26,24 +19,42 @@ interface Primary {
   secondaryEmotions: Secondary[];
 }
 
+interface EmotionWheelProps {
+  selectedEmotion: string | null;
+  wheelRotation: number;
+  isProcessing: boolean;
+  processingStage: string;
+}
+
+interface Node {
+  x: number;
+  y: number;
+  z: number;
+  color: string;
+  size?: number;
+  type: 'primary' | 'secondary' | 'tertiary';
+  name: string;
+  index: number;
+}
+
 const EmotionWheel: React.FC<EmotionWheelProps> = ({ 
   selectedEmotion, 
   wheelRotation, 
-  isProcessing 
+  isProcessing,
+  processingStage 
 }) => {
-  // States for active emotions and animation
   const [activePrimary, setActivePrimary] = useState<Primary | null>(null);
   const [activeSecondary, setActiveSecondary] = useState<Secondary | null>(null);
   const [activeTertiary, setActiveTertiary] = useState<Tertiary | null>(null);
   const [animationStage, setAnimationStage] = useState<number>(0);
-  const [neuronNodes, setNeuronNodes] = useState<{x: number, y: number, z: number, color: string, size?: number}[]>([]);
-  const [connections, setConnections] = useState<{source: number, target: number, active: boolean}[]>([]);
-
-  // Canvas refs
+  const [neuronNodes, setNeuronNodes] = useState<Node[]>([]);
+  const [connections, setConnections] = useState<{ source: number, target: number, active: boolean }[]>([]);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>(0);
+  const [hoveredNode, setHoveredNode] = useState<Node | null>(null);
+  const [mousePos, setMousePos] = useState<{x: number, y: number}>({x: 0, y: 0});
 
-  // Define the emotion wheel structure based on the CSV
+
   const emotionWheel: Primary[] = [
     {
       name: "Happy",
@@ -400,11 +411,9 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
     }
   ];
 
-  // Map of emotion names to colors for quick lookup
   const emotionColorMap = new Map<string, string>();
 
   useEffect(() => {
-    // Build the emotion color map
     emotionWheel.forEach(primary => {
       emotionColorMap.set(primary.name.toLowerCase(), primary.color);
       primary.secondaryEmotions.forEach(secondary => {
@@ -416,9 +425,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
     });
   }, []);
 
-  // Find the matching emotion in the wheel structure
   useEffect(() => {
-    // Reset animation stage when emotion changes
     setAnimationStage(0);
     setActivePrimary(null);
     setActiveSecondary(null);
@@ -426,12 +433,10 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
 
     if (!selectedEmotion) return;
 
-    // Find the closest matching emotions
     let foundPrimary: Primary | null = null;
     let foundSecondary: Secondary | null = null;
     let foundTertiary: Tertiary | null = null;
 
-    // First check for exact tertiary emotion match
     emotionWheel.forEach(primary => {
       primary.secondaryEmotions.forEach(secondary => {
         secondary.tertiaryEmotions.forEach(tertiary => {
@@ -444,7 +449,6 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
       });
     });
 
-    // If no tertiary match, check for secondary
     if (!foundPrimary) {
       emotionWheel.forEach(primary => {
         primary.secondaryEmotions.forEach(secondary => {
@@ -456,7 +460,6 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
       });
     }
 
-    // If still no match, check for primary
     if (!foundPrimary) {
       emotionWheel.forEach(primary => {
         if (primary.name.toLowerCase() === selectedEmotion.toLowerCase()) {
@@ -465,9 +468,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
       });
     }
 
-    // If we have any match, begin the animation sequence
     if (foundPrimary) {
-      // Set a timeout to allow wheel to finish rotating first
       setTimeout(() => {
         setActivePrimary(foundPrimary);
         setAnimationStage(1);
@@ -489,7 +490,6 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
     }
   }, [selectedEmotion, wheelRotation]);
 
-  // Initialize 3D visualization
   useEffect(() => {
     if (!canvasRef.current) return;
 
@@ -497,7 +497,6 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Set canvas size
     const resizeCanvas = () => {
       const container = canvas.parentElement;
       if (container) {
@@ -509,12 +508,10 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
-    // Generate neural network nodes
     const generateNodes = () => {
-      const nodes: {x: number, y: number, z: number, color: string, size?: number}[] = [];
+      const nodes: Node[] = [];
       const numPrimaryNodes = emotionWheel.length;
 
-      // Primary nodes in center
       emotionWheel.forEach((primary, i) => {
         const angle = (i * Math.PI * 2) / numPrimaryNodes;
         const radius = 50;
@@ -523,11 +520,13 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
           y: Math.sin(angle) * radius + canvas.height / 2,
           z: 20,
           color: primary.color,
-          size: 6
+          size: 6,
+          type: 'primary',
+          name: primary.name,
+          index: i
         });
       });
 
-      // Secondary nodes in middle layer
       let secondaryCount = 0;
       emotionWheel.forEach((primary, i) => {
         primary.secondaryEmotions.forEach((secondary, j) => {
@@ -538,27 +537,41 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
             y: Math.sin(angle) * radius + canvas.height / 2,
             z: 10,
             color: secondary.color,
-            size: 4
+            size: 4,
+            type: 'secondary',
+            name: secondary.name,
+            index: emotionWheel.length + secondaryCount
           });
           secondaryCount++;
         });
       });
 
-      // Tertiary nodes in outer layer
+      let totalTertiaryCount = 0;
+      emotionWheel.forEach(primary => {
+        primary.secondaryEmotions.forEach(secondary => {
+          totalTertiaryCount += secondary.tertiaryEmotions.length;
+        });
+      });
+
+      let tertiaryIndex = 0;
+      let tertiaryNodeIndex = emotionWheel.length + secondaryCount;
       emotionWheel.forEach((primary, i) => {
         primary.secondaryEmotions.forEach((secondary, j) => {
           secondary.tertiaryEmotions.forEach((tertiary, k) => {
-            const baseAngle = (i * Math.PI * 2) / numPrimaryNodes;
-            const offset = (j * 0.3) + (k * 0.1);
-            const angle = baseAngle + offset;
+            const angle = (tertiaryIndex * Math.PI * 2) / totalTertiaryCount;
             const radius = 200;
             nodes.push({
               x: Math.cos(angle) * radius + canvas.width / 2,
               y: Math.sin(angle) * radius + canvas.height / 2,
               z: 5,
               color: tertiary.color,
-              size: 2
+              size: 3,
+              type: 'tertiary',
+              name: tertiary.name,
+              index: tertiaryNodeIndex
             });
+            tertiaryIndex++;
+            tertiaryNodeIndex++;
           });
         });
       });
@@ -566,13 +579,11 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
       return nodes;
     };
 
-    // Generate node connections
     const generateConnections = () => {
       const connections: {source: number, target: number, active: boolean}[] = [];
       const primaryCount = emotionWheel.length;
       let secondaryBaseIndex = primaryCount;
 
-      // Connect primary to secondary
       emotionWheel.forEach((primary, i) => {
         primary.secondaryEmotions.forEach((_, j) => {
           connections.push({
@@ -584,7 +595,6 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
         secondaryBaseIndex += primary.secondaryEmotions.length;
       });
 
-      // Connect secondary to tertiary
       secondaryBaseIndex = primaryCount;
       let tertiaryBaseIndex = secondaryBaseIndex;
 
@@ -616,20 +626,17 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
     };
 
     const nodes = generateNodes();
-    const connections = generateConnections();
+    const cons = generateConnections();
 
     setNeuronNodes(nodes);
-    setConnections(connections);
+    setConnections(cons);
 
-    // Animation loop
     let time = 0;
     const animate = () => {
       if (!ctx || !canvas) return;
 
-      // Clear canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Update nodes positions with gentle wave motion
       const updatedNodes = nodes.map((node, i) => {
         const speed = 0.001;
         const amplitude = 5;
@@ -640,28 +647,22 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
         };
       });
 
-      // Draw connections with enhanced effects
       connections.forEach(conn => {
         const source = updatedNodes[conn.source];
         const target = updatedNodes[conn.target];
 
-        // Calculate midpoint for curved lines
         const midX = (source.x + target.x) / 2;
         const midY = (source.y + target.y) / 2 + (Math.sin(time * 0.003) * 10);
 
         ctx.beginPath();
-
-        // Use quadratic curves for more organic look
         ctx.moveTo(source.x, source.y);
         ctx.quadraticCurveTo(midX, midY, target.x, target.y);
 
         if (isProcessing) {
-          // More dynamic lines during processing
           const pulseOpacity = Math.sin(time * 0.01 + conn.source * 0.1) * 0.4 + 0.6;
           const hue = (time * 0.1 + conn.source * 10) % 360;
 
           if (conn.active) {
-            // Data flowing effect for active connections during processing
             const gradient = ctx.createLinearGradient(source.x, source.y, target.x, target.y);
             gradient.addColorStop(0, `rgba(0, 255, 255, ${pulseOpacity})`);
             gradient.addColorStop((Math.sin(time * 0.005 + conn.source * 0.1) * 0.5 + 0.5), `rgba(255, 100, 255, ${pulseOpacity})`);
@@ -685,7 +686,6 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
 
         ctx.stroke();
 
-        // Add data packet animation for active connections during processing
         if (isProcessing && conn.active) {
           const packetPos = (time * 0.01 + conn.source * 0.5) % 1;
           const packetX = source.x + (target.x - source.x) * packetPos;
@@ -698,31 +698,26 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
         }
       });
 
-      // Draw nodes with enhanced effects
       updatedNodes.forEach((node, i) => {
         ctx.beginPath();
 
-        // Size adjustment based on processing state
         const nodeSize = isProcessing 
           ? (node.size || 1) * (1 + Math.sin(time * 0.005 + i * 0.2) * 0.3) 
           : (node.size || 1);
 
         ctx.arc(node.x, node.y, nodeSize * 3, 0, Math.PI * 2);
 
-        // Create gradient fill for more dimension
         const gradient = ctx.createRadialGradient(
           node.x, node.y, 0,
           node.x, node.y, nodeSize * 3
         );
 
-        // More vibrant colors during processing
         if (isProcessing) {
           const alpha = 0.7 + Math.sin(time * 0.01 + i) * 0.3;
           gradient.addColorStop(0, node.color.replace(')', `, ${alpha})`).replace('rgb', 'rgba'));
           gradient.addColorStop(0.7, node.color.replace(')', ', 0.6)').replace('rgb', 'rgba'));
           gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
-          // Add glow effect for nodes during processing
           ctx.shadowColor = node.color;
           ctx.shadowBlur = 15;
         } else {
@@ -735,11 +730,9 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
         ctx.fillStyle = gradient;
         ctx.fill();
 
-        // Reset shadow for next drawing
         ctx.shadowBlur = 0;
       });
 
-      // Add electric sparks during processing
       if (isProcessing && time % 10 === 0) {
         for (let i = 0; i < 3; i++) {
           const randomSourceIndex = Math.floor(Math.random() * nodes.length);
@@ -749,11 +742,9 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
             const source = updatedNodes[randomSourceIndex];
             const target = updatedNodes[randomTargetIndex];
 
-            // Draw lightning effect
             ctx.beginPath();
             ctx.moveTo(source.x, source.y);
 
-            // Create jagged line for electricity effect
             const segments = 5;
             for (let j = 1; j < segments; j++) {
               const ratio = j / segments;
@@ -776,24 +767,20 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
       requestAnimationFrame(animate);
     };
 
-    // Start animation
     animate();
 
-    // Cleanup function
     return () => {
       window.removeEventListener('resize', resizeCanvas);
       cancelAnimationFrame(animationRef.current);
     };
   }, [activePrimary, activeSecondary, activeTertiary, isProcessing]);
 
-  // Helper function to check if a node is active
+
   const isNodeActive = (index: number) => {
-    // Primary nodes
     if (index < emotionWheel.length) {
       return activePrimary && emotionWheel[index].name === activePrimary.name;
     }
 
-    // Secondary nodes
     let secondaryCount = 0;
     let secondaryIndex = -1;
     let primaryIndex = -1;
@@ -824,11 +811,9 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
       );
     }
 
-    // Tertiary nodes
     return activeTertiary !== null && activePrimary !== null && activeSecondary !== null;
   };
 
-  // Utility function to convert hex to rgb
   const hexToRgb = (hex: string) => {
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result 
@@ -836,13 +821,32 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
       : '0, 200, 255';
   };
 
+  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (rect) {
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      setMousePos({x, y});
+      const foundNode = neuronNodes.find(node => {
+        const distance = Math.sqrt(Math.pow(x - node.x, 2) + Math.pow(y - node.y, 2));
+        return distance < (node.size || 1) * 3;
+      });
+      setHoveredNode(foundNode);
+    }
+  };
+
   return (
-    <div className="emotion-visualization-container">
+    <div className="emotion-visualization-container" >
       <canvas 
         ref={canvasRef} 
         className={`emotion-neural-net ${isProcessing ? 'processing' : ''}`}
+        onMouseMove={handleMouseMove}
       />
-
+      {hoveredNode && (
+        <div className="hover-info" style={{ left: mousePos.x + 10, top: mousePos.y + 10 }}>
+          {hoveredNode.name}
+        </div>
+      )}
       {selectedEmotion && (
         <div className="emotion-path-container">
           <div className={`emotion-path ${animationStage > 0 ? 'show' : ''}`}>

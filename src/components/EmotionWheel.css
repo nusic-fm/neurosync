@@ -149,6 +149,55 @@
   z-index: 10;
 }
 
+
+/* Emotion Node Tooltip */
+.emotion-hover-tooltip {
+  position: absolute;
+  pointer-events: none;
+  z-index: 10;
+  background: rgba(10, 15, 30, 0.85);
+  border-radius: 10px;
+  padding: 8px 12px;
+  box-shadow: 
+    0 0 0 1px rgba(0, 200, 255, 0.2),
+    0 0 15px rgba(0, 200, 255, 0.4);
+  backdrop-filter: blur(5px);
+  animation: tooltip-appear 0.2s forwards;
+  transform-origin: left center;
+}
+
+.tooltip-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.tooltip-type {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 2px;
+}
+
+.tooltip-name {
+  font-size: 1rem;
+  font-weight: bold;
+  text-shadow: 0 0 5px currentColor;
+}
+
+@keyframes tooltip-appear {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 .processing-spinner {
   width: 40px;
   height: 40px;
