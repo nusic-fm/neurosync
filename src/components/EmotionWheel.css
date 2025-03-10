@@ -260,30 +260,27 @@
   font-size: 14px;
   z-index: 100;
   pointer-events: none;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2), 0 0 20px rgba(0, 200, 255, 0.3);
   backdrop-filter: blur(3px);
-  transform: translateY(-100%);
   white-space: nowrap;
-  top: -5px;
-  left: 50%;
   transform: translate(-50%, -100%);
-  opacity: 0;
-  visibility: hidden;
+  margin-top: -15px;
   transition: opacity 0.2s, visibility 0.2s;
   display: flex;
   align-items: center;
   gap: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  animation: tooltip-glow 1.5s infinite alternate;
+}
+
+@keyframes tooltip-glow {
+  0% { box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2), 0 0 10px rgba(0, 200, 255, 0.3); }
+  100% { box-shadow: 0 3px 15px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 200, 255, 0.5); }
 }
 
 .emotion-tooltip .emotion-emoji {
   font-size: 18px;
   margin-right: 4px;
-}
-
-.emotion-segment:hover .emotion-tooltip { /*Assumed class selector*/
-  opacity: 1;
-  visibility: visible;
 }
 
 
