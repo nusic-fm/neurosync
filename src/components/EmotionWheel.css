@@ -249,3 +249,111 @@
     height: 280px;
   }
 }
+
+/* Added Tooltip Styles */
+.emotion-tooltip {
+  position: absolute;
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  z-index: 100;
+  pointer-events: none;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(3px);
+  transform: translateY(-100%);
+  white-space: nowrap;
+  top: -5px;
+  left: 50%;
+  transform: translate(-50%, -100%);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, visibility 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.emotion-tooltip .emotion-emoji {
+  font-size: 18px;
+  margin-right: 4px;
+}
+
+.emotion-segment:hover .emotion-tooltip { /*Assumed class selector*/
+  opacity: 1;
+  visibility: visible;
+}
+
+
+/*Improved Emotion Path Styling*/
+.emotion-path {
+  margin-top: 20px;
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 15px;
+  border-radius: 8px;
+  max-width: 90%;
+  margin: 20px auto 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.path-title {
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #fff;
+  font-size: 1.1rem;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.path-steps {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+}
+
+.path-step {
+  display: flex;
+  align-items: center;
+  padding: 8px 14px;
+  border-radius: 20px;
+  margin: 5px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.path-step:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.color-dot {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  margin-right: 8px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+}
+
+.path-arrow {
+  margin: 0 5px;
+  color: #fff;
+  font-size: 1.2rem;
+}
+
+.primary {
+  background-color: rgba(0, 0, 0, 0.25);
+  font-weight: 600;
+}
+
+.secondary {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.tertiary {
+  background-color: rgba(0, 0, 0, 0.15);
+}

@@ -835,6 +835,57 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
     }
   };
 
+  const getEmoji = (emotion: string): string => {
+    //  A very basic emoji mapping - replace with a more comprehensive solution
+    switch (emotion.toLowerCase()) {
+      case "happy": return "😊";
+      case "sad": return "😔";
+      case "angry": return "😠";
+      case "fearful": return "😨";
+      case "surprised": return "😲";
+      case "disgusted": return "🤢";
+      case "optimistic": return "😄";
+      case "trusting": return "😇";
+      case "proud": return "👍";
+      case "content": return "😌";
+      case "playful": return "😜";
+      case "interested": return "🤔";
+      case "accepted": return "🤝";
+      case "peaceful": return "☮️";
+      case "amazed": return "🤯";
+      case "confused": return "😕";
+      case "excited": return "🥳";
+      case "startled": return "😱";
+      case "lonely": return "💔";
+      case "vulnerable": return "🥺";
+      case "guilty": return "😞";
+      case "depressed": return "🙁";
+      case "hurt": return "😢";
+      case "bored": return "😴";
+      case "busy": return "🏃";
+      case "stressed": return "😫";
+      case "tired": return "😪";
+      case "scared": return "😱";
+      case "anxious": return "😰";
+      case "weak": return "😥";
+      case "rejected": return "💔";
+      case "threatened": return "⚠️";
+      case "let down": return "😓";
+      case "humiliated": return "😞";
+      case "bitter": return "😠";
+      case "mad": return "😡";
+      case "aggressive": return "👿";
+      case "frustrated": return "💢";
+      case "distant": return "😶";
+      case "critical": return "🤨";
+      case "disapproving": return "👎";
+      case "disappointed": return "😔";
+      case "awful": return "🤮";
+      case "repelled": return "😖";
+      default: return "";
+    }
+  };
+
   return (
     <div className="emotion-visualization-container" >
       <canvas 
@@ -853,7 +904,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
             {activePrimary && (
               <div className="path-step primary">
                 <div className="color-dot" style={{ backgroundColor: activePrimary.color }}></div>
-                <span>{activePrimary.name}</span>
+                <span>{getEmoji(activePrimary.name)} {activePrimary.name}</span>
               </div>
             )}
 
@@ -862,7 +913,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
                 <div className="path-arrow">→</div>
                 <div className="path-step secondary">
                   <div className="color-dot" style={{ backgroundColor: activeSecondary.color }}></div>
-                  <span>{activeSecondary.name}</span>
+                  <span>{getEmoji(activeSecondary.name)} {activeSecondary.name}</span>
                 </div>
               </>
             )}
@@ -872,7 +923,7 @@ const EmotionWheel: React.FC<EmotionWheelProps> = ({
                 <div className="path-arrow">→</div>
                 <div className="path-step tertiary">
                   <div className="color-dot" style={{ backgroundColor: activeTertiary.color }}></div>
-                  <span>{activeTertiary.name}</span>
+                  <span>{getEmoji(activeTertiary.name)} {activeTertiary.name}</span>
                 </div>
               </>
             )}
